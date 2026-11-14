@@ -22,7 +22,6 @@ const AdminLayout = () => {
     { name: "Dashboard", path: "/admin/dashboard", icon: "layout" },
     { name: "Products", path: "/admin/products", icon: "battery" },
     { name: "Orders", path: "/admin/orders", icon: "shopping-cart" },
-    { name: "Sales", path: "/admin/sales", icon: "credit-card" },
     { name: "Customers", path: "/admin/customers", icon: "users" },
     { name: "Maintenance", path: "/admin/maintenance", icon: "headset" },
     { name: "Suppliers", path: "/admin/suppliers", icon: "truck" },
