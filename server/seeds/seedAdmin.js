@@ -4,7 +4,6 @@ import User from "../models/User.js";
 import Product from "../models/Product.js";
 import Supplier from "../models/Supplier.js";
 import Order from "../models/Order.js";
-import Sale from "../models/Sale.js";
 import MaintenanceRequest from "../models/MaintenanceRequest.js";
 
 dotenv.config();
@@ -363,19 +362,21 @@ const seedData = async () => {
     const exideCar = await Product.findOne({ sku: "EX-CAR400" });
     const bikeBattery = await Product.findOne({ sku: "EX-BIKE7" });
 
-    if (exideCar && !await Order.findOne({ bookingId: "BK100001" })) {
+    if (exideCar && !(await Order.findOne({ bookingId: "BK100001" }))) {
       await Order.create({
         customer: customer._id,
         bookingId: "BK100001",
-        items: [{
-          product: exideCar._id,
-          productName: exideCar.name,
-          brand: exideCar.brand,
-          sku: exideCar.sku,
-          quantity: 1,
-          price: exideCar.sellingPrice,
-          gstRate: exideCar.gstRate,
-        }],
+        items: [
+          {
+            product: exideCar._id,
+            productName: exideCar.name,
+            brand: exideCar.brand,
+            sku: exideCar.sku,
+            quantity: 1,
+            price: exideCar.sellingPrice,
+            gstRate: exideCar.gstRate,
+          },
+        ],
         quantity: 1,
         totalAmount: exideCar.sellingPrice,
         gstAmount: Math.round((exideCar.sellingPrice * exideCar.gstRate) / 100),
@@ -383,26 +384,27 @@ const seedData = async () => {
         status: "Completed",
         stockReserved: true,
       });
-      // Deduct stock
       exideCar.reservedStock = Math.max(0, exideCar.reservedStock - 1);
       exideCar.currentStock = Math.max(0, exideCar.currentStock - 1);
       await exideCar.save();
       console.log("Sample order created.");
     }
 
-    if (bikeBattery && !await Order.findOne({ bookingId: "BK100002" })) {
+    if (bikeBattery && !(await Order.findOne({ bookingId: "BK100002" }))) {
       await Order.create({
         customer: customer._id,
         bookingId: "BK100002",
-        items: [{
-          product: bikeBattery._id,
-          productName: bikeBattery.name,
-          brand: bikeBattery.brand,
-          sku: bikeBattery.sku,
-          quantity: 2,
-          price: bikeBattery.sellingPrice,
-          gstRate: bikeBattery.gstRate,
-        }],
+        items: [
+          {
+            product: bikeBattery._id,
+            productName: bikeBattery.name,
+            brand: bikeBattery.brand,
+            sku: bikeBattery.sku,
+            quantity: 2,
+            price: bikeBattery.sellingPrice,
+            gstRate: bikeBattery.gstRate,
+          },
+        ],
         quantity: 2,
         totalAmount: bikeBattery.sellingPrice * 2,
         gstAmount: Math.round((bikeBattery.sellingPrice * 2 * bikeBattery.gstRate) / 100),
@@ -417,74 +419,8 @@ const seedData = async () => {
       console.log("Sample order 2 created.");
     }
 
-    // --- Seed Sample Sales ---
-    const sfInverter = await Product.findOne({ sku: "SF-IT600" });
-    const microtekUps = await Product.findOne({ sku: "MT-UPS2450" });
-
-    if (sfInverter && !await Sale.findOne({ invoiceNumber: "INV200001" })) {
-      await Sale.create({
-        invoiceNumber: "INV200001",
-        customerName: "Rahul Sharma",
-        customerMobile: "9876543210",
-        saleType: "walk-in",
-        items: [{
-          product: sfInverter._id,
-          productName: sfInverter.name,
-          brand: sfInverter.brand,
-          sku: sfInverter.sku,
-          quantity: 1,
-          unitPrice: sfInverter.sellingPrice,
-          gstRate: sfInverter.gstRate,
-          gstAmount: Math.round((sfInverter.sellingPrice * sfInverter.gstRate) / 100),
-          total: sfInverter.sellingPrice + Math.round((sfInverter.sellingPrice * sfInverter.gstRate) / 100),
-        }],
-        subtotal: sfInverter.sellingPrice,
-        discount: 0,
-        gstAmount: Math.round((sfInverter.sellingPrice * sfInverter.gstRate) / 100),
-        totalAmount: sfInverter.sellingPrice + Math.round((sfInverter.sellingPrice * sfInverter.gstRate) / 100),
-        paymentStatus: "paid",
-        paymentMethod: "cash",
-        createdBy: admin._id,
-      });
-      sfInverter.reservedStock = Math.max(0, sfInverter.reservedStock - 1);
-      sfInverter.currentStock = Math.max(0, sfInverter.currentStock - 1);
-      await sfInverter.save();
-      console.log("Sample sale created.");
-    }
-
-    if (microtekUps && !await Sale.findOne({ invoiceNumber: "INV200002" })) {
-      await Sale.create({
-        invoiceNumber: "INV200002",
-        customerName: "Priya Singh",
-        customerMobile: "9123456789",
-        saleType: "website",
-        items: [{
-          product: microtekUps._id,
-          productName: microtekUps.name,
-          brand: microtekUps.brand,
-          sku: microtekUps.sku,
-          quantity: 1,
-          unitPrice: microtekUps.sellingPrice,
-          gstRate: microtekUps.gstRate,
-          gstAmount: Math.round((microtekUps.sellingPrice * microtekUps.gstRate) / 100),
-          total: microtekUps.sellingPrice + Math.round((microtekUps.sellingPrice * microtekUps.gstRate) / 100),
-        }],
-        subtotal: microtekUps.sellingPrice,
-        discount: 500,
-        gstAmount: Math.round((microtekUps.sellingPrice * microtekUps.gstRate) / 100),
-        totalAmount: microtekUps.sellingPrice + Math.round((microtekUps.sellingPrice * microtekUps.gstRate) / 100) - 500,
-        paymentStatus: "paid",
-        paymentMethod: "upi",
-        createdBy: admin._id,
-      });
-      microtekUps.reservedStock = Math.max(0, microtekUps.reservedStock - 1);
-      microtekUps.currentStock = Math.max(0, microtekUps.currentStock - 1);
-      await microtekUps.save();
-      console.log("Sample sale 2 created.");
-    }
-
     // --- Seed Sample Maintenance Requests ---
-    if (!await MaintenanceRequest.findOne({ requestId: "MR300001" })) {
+    if (!(await MaintenanceRequest.findOne({ requestId: "MR300001" }))) {
       await MaintenanceRequest.create({
         requestId: "MR300001",
         customer: customer._id,
@@ -506,7 +442,7 @@ const seedData = async () => {
       console.log("Sample maintenance request created.");
     }
 
-    if (!await MaintenanceRequest.findOne({ requestId: "MR300002" })) {
+    if (!(await MaintenanceRequest.findOne({ requestId: "MR300002" }))) {
       await MaintenanceRequest.create({
         requestId: "MR300002",
         customerName: "Amit Patel",
