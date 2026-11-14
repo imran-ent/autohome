@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://autohomebatteries.pages.dev/sitemap.xml

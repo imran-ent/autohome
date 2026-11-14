@@ -1,0 +1,6 @@
+MongoDB Connected: 127.0.0.1
+Server running in development mode on port 5000
+✅ [PAYMENT] Initiated PAY-50D02195 for Order BK231199 — ₹7800
+🔔 [OWNER NOTIFICATION] Order BK231199 completed — ₹7800 paid. Stock deducted. Customer: 6af607afd6edfefa9d18a3dd
+✅ [PAYMENT] Customer submitted UTR UTR123456789 for PAY-50D02195
+📥 [WEBHOOK] Event: PAYMENT_SUCCESS | Payment: PAY-TEST-WEBHOOK | UTR: UTR-WEBHOOK-TEST

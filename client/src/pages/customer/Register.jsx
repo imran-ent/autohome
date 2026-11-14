@@ -1,0 +1,67 @@
+﻿import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, Phone, User, ArrowRight, Battery } from "lucide-react";
+import { authService } from "../../services/authService.js";
+import { useAuth } from "../../context/AuthContext.jsx";
+import toast from "react-hot-toast";
+import Input from "../../components/common/Input.jsx";
+import Button from "../../components/common/Button.jsx";
+import Card from "../../components/common/Card.jsx";
+
+const Register = () => {
+  const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await authService.register(form);
+      login(response.data.data.user, response.data.data.token);
+      toast.success("Account created successfully");
+      navigate("/");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-offwhite py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-10">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-navy to-blue rounded-2xl flex items-center justify-center shadow-lg shadow-blue/20">
+              <Battery size={24} color="white" strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-charcoal tracking-tight leading-none">
+                AutoHome <span className="text-blue">Batteries</span>
+              </span>
+              <span className="text-[10px] font-medium text-blue uppercase tracking-wider mt-0.5">Est. 2026</span>
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-charcoal mb-2">Create Account</h2>
+          <p className="text-gray-500">Join AutoHome Batteries today</p>
+        </div>
+        <Card className="p-8 elevated">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input label="Full Name" type="text" placeholder="John Doe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} leftIcon={<User size={18} className="text-gray-400" />} />
+            <Input label="Email Address" type="email" placeholder="name@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} leftIcon={<Mail size={18} className="text-gray-400" />} />
+            <Input label="Mobile Number" type="tel" placeholder="+91 90000 00000" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} leftIcon={<Phone size={18} className="text-gray-400" />} />
+            <Input label="Password" type={showPassword ? "text" : "password"} placeholder="Enter your password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} leftIcon={<Lock size={18} className="text-gray-400" />} rightIcon={<Eye size={18} className={`cursor-pointer hover:text-blue transition-colors ${showPassword ? "text-gray-400" : "text-gray-400"}`} onClick={() => setShowPassword(!showPassword)} />} />
+            <Button type="submit" variant="primary" className="w-full py-4" disabled={loading}>{loading ? "Creating account..." : "Create Account"} <ArrowRight size={18} /></Button>
+          </form>
+          <p className="mt-8 text-center text-sm text-gray-600">Already have an account? <Link to="/login" className="text-blue font-medium hover:underline">Sign in</Link></p>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
+

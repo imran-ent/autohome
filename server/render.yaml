@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: autohome-batteries-api
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CLIENT_URL
+        value: https://your-cloudflare-pages-domain.pages.dev
+      - key: MONGODB_URI
+        fromDatabase:
+          name: autohome-batteries-mongodb
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: ADMIN_EMAIL
+        value: autohomebatteries@gmail.com
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: ADMIN_NAME
+        value: Mohammed Umer A
+      - key: BUSINESS_PHONE_1
+        value: 9789688756
+      - key: BUSINESS_PHONE_2
+        value: 9443437168
+      - key: BUSINESS_EMAIL
+        value: autohomebatteries@gmail.com
+      - key: BUSINESS_ADDRESS
+        value: Maula Street, Opp of SN Tea Stall, Pernambut 635810, Tamil Nadu
+      - key: BUSINESS_TIMING
+        value: 6:00 AM to 10:00 PM
+      - key: PUTER_MODEL
+        value: gpt-5.5
+    # PUTER_AUTH_TOKEN should be added manually in Render dashboard
+    # PUTER_AUTH_TOKEN=your_puter_auth_token_here
+    autoDeploy: true
+
+databases:
+  - name: autohome-batteries-mongodb
+    databaseName: autohome_batteries
+    region: us-east-1
+    plan: free
