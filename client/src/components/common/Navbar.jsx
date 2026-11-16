@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
@@ -12,7 +12,10 @@ import {
   UserCheck,
   Wrench,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext.jsx";
+
+const PROTECTED_PATHS = ["/battery-finder", "/maintenance", "/my-orders", "/my-maintenance"];
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -20,6 +23,7 @@ const Navbar = () => {
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
   const { logout, isAuthenticated, isAdmin, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -44,6 +48,17 @@ const Navbar = () => {
       document.body.style.overflow = "unset";
     };
   }, [mobileMenuOpen]);
+
+  const handleNavClick = (e, path, label) => {
+    setMobileMenuOpen(false);
+    setMoreDropdownOpen(false);
+
+    if (!isAuthenticated && PROTECTED_PATHS.includes(path)) {
+      e.preventDefault();
+      toast.error(`Please login or register first to access ${label}`);
+      navigate("/login", { state: { from: { pathname: path } } });
+    }
+  };
 
   const primaryNavLinks = [
     { name: "Home", path: "/" },
@@ -94,6 +109,7 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
+                onClick={(e) => handleNavClick(e, link.path, link.name)}
                 className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
                   isActive
                     ? "bg-white text-blue-600 shadow-xs font-bold"
@@ -150,26 +166,29 @@ const Navbar = () => {
 
         {/* Right Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {!isAdminRoute && (
+            <Link
+              to="/my-orders"
+              onClick={(e) => handleNavClick(e, "/my-orders", "My Orders")}
+              className={`hidden sm:inline-flex text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all items-center gap-1 ${
+                location.pathname === "/my-orders"
+                  ? "bg-blue-50 text-blue-600 border-blue-200"
+                  : "bg-gray-50/80 text-gray-700 border-gray-200/60 hover:bg-gray-100"
+              }`}
+            >
+              <PackageCheck size={14} />
+              <span>Orders</span>
+            </Link>
+          )}
+
           {isAuthenticated && !isAdminRoute && (
-            <div className="hidden sm:flex items-center gap-1.5">
-              <Link
-                to="/my-orders"
-                className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1 ${
-                  location.pathname === "/my-orders"
-                    ? "bg-blue-50 text-blue-600 border-blue-200"
-                    : "bg-gray-50/80 text-gray-700 border-gray-200/60 hover:bg-gray-100"
-                }`}
-              >
-                <PackageCheck size={14} />
-                Orders
-              </Link>
-              <button
-                onClick={logout}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50/80 px-2.5 py-1.5 rounded-xl border border-rose-200/50 transition-all flex items-center gap-1"
-              >
-                <LogOut size={13} />
-              </button>
-            </div>
+            <button
+              onClick={logout}
+              title="Logout"
+              className="hidden sm:inline-flex text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50/80 px-2.5 py-1.5 rounded-xl border border-rose-200/50 transition-all items-center gap-1"
+            >
+              <LogOut size={13} />
+            </button>
           )}
 
           {!isAuthenticated && !isAdminRoute && (
@@ -210,7 +229,7 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => handleNavClick(e, link.path, link.name)}
                 className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                   location.pathname === link.path
                     ? "bg-blue-50 text-blue-600 font-bold"
@@ -224,6 +243,14 @@ const Navbar = () => {
           </div>
 
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
+            <Link
+              to="/my-orders"
+              onClick={(e) => handleNavClick(e, "/my-orders", "My Orders")}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-xl"
+            >
+              <PackageCheck size={15} /> My Orders
+            </Link>
+
             {isAuthenticated ? (
               <>
                 {isAdmin && (
@@ -235,13 +262,6 @@ const Navbar = () => {
                     <ShieldCheck size={15} className="text-amber-400" /> Admin Dashboard
                   </Link>
                 )}
-                <Link
-                  to="/my-orders"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-xl"
-                >
-                  <PackageCheck size={15} /> My Orders
-                </Link>
                 <Link
                   to="/my-maintenance"
                   onClick={() => setMobileMenuOpen(false)}
@@ -265,7 +285,7 @@ const Navbar = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-white bg-blue-600 rounded-xl"
               >
-                <UserCheck size={15} /> Login to Account
+                <UserCheck size={15} /> Login / Register Account
               </Link>
             )}
           </div>

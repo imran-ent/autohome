@@ -13,14 +13,26 @@ import {
   Zap,
   MapPin,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { Button } from "../../components/common/Button.jsx";
 import { Card } from "../../components/common/Card.jsx";
 import { productService } from "../../services/productService.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 const Home = () => {
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  const handleProtectedNav = (path, featureName) => {
+    if (!isAuthenticated) {
+      toast.error(`Please login or register first to access ${featureName}`);
+      navigate("/login", { state: { from: { pathname: path } } });
+      return;
+    }
+    navigate(path);
+  };
 
   const categories = [
     {
@@ -117,7 +129,7 @@ const Home = () => {
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => navigate("/battery-finder")}
+                onClick={() => handleProtectedNav("/battery-finder", "AI Battery Finder")}
                 className="w-full sm:w-auto justify-center"
               >
                 <Search size={20} /> Find My Battery
@@ -310,7 +322,11 @@ const Home = () => {
               Is your battery not charging or giving low backup? Book a professional maintenance service and get a technician visit within 24 hours.
             </p>
             <div className="flex justify-center">
-              <Button variant="gold" size="lg" onClick={() => navigate("/maintenance")}>
+              <Button
+                variant="gold"
+                size="lg"
+                onClick={() => handleProtectedNav("/maintenance", "Maintenance & Repair")}
+              >
                 <Wrench size={20} /> Book Maintenance & Repair
               </Button>
             </div>
@@ -366,7 +382,7 @@ const Home = () => {
                 href="https://maps.app.goo.gl/Eo7VaAAysAE992YH8?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-grey text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors"
               >
                 <MapPin size={15} /> Open Google Maps
               </a>
