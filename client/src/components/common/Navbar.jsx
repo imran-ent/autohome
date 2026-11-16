@@ -4,7 +4,6 @@ import {
   Menu,
   X,
   Battery,
-  Phone,
   LogOut,
   ShieldCheck,
   ChevronDown,
@@ -71,18 +70,18 @@ const Navbar = () => {
     <header className="fixed top-3 sm:top-4 inset-x-0 z-50 max-w-7xl mx-auto px-3 sm:px-6 transition-all duration-300">
       {/* Dynamic Frosted Glass Capsule */}
       <div
-        className={`rounded-2xl border transition-all duration-300 px-4 sm:px-5 py-2.5 flex items-center justify-between ${
+        className={`rounded-2xl border transition-all duration-300 px-3.5 sm:px-5 py-2.5 flex items-center justify-between gap-2 ${
           scrolled || isProductRoute
             ? "bg-white/85 backdrop-blur-2xl border-gray-200/80 shadow-md shadow-gray-900/5 ring-1 ring-black/5"
             : "bg-white/75 backdrop-blur-xl border-white/60 shadow-sm"
         }`}
       >
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group focus:outline-none">
-          <div className="w-9 h-9 bg-gradient-to-tr from-slate-900 via-blue-900 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-            <Battery size={20} strokeWidth={2.5} />
+        <Link to="/" className="flex items-center gap-2 group focus:outline-none min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 bg-gradient-to-tr from-slate-900 via-blue-900 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
+            <Battery size={19} strokeWidth={2.5} />
           </div>
-          <span className="text-base sm:text-lg font-bold text-gray-900 tracking-tight leading-tight">
+          <span className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight leading-tight truncate">
             AutoHome <span className="text-blue-600">Batteries</span>
           </span>
         </Link>
@@ -150,7 +149,7 @@ const Navbar = () => {
         </nav>
 
         {/* Right Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {isAuthenticated && !isAdminRoute && (
             <div className="hidden sm:flex items-center gap-1.5">
               <Link
@@ -176,10 +175,10 @@ const Navbar = () => {
           {!isAuthenticated && !isAdminRoute && (
             <Link
               to="/login"
-              className="hidden sm:inline-flex text-xs font-semibold text-gray-700 bg-gray-100/80 hover:bg-gray-200 px-3.5 py-1.5 rounded-xl transition-all items-center gap-1"
+              className="inline-flex text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 sm:px-3.5 py-1.5 rounded-xl transition-all items-center gap-1.5 shadow-xs"
             >
               <UserCheck size={13} />
-              Login
+              <span>Login</span>
             </Link>
           )}
 
@@ -193,16 +192,9 @@ const Navbar = () => {
             </Link>
           )}
 
-          <a
-            href="tel:+919789688756"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
-          >
-            <Phone size={13} />
-            <span>Call Us</span>
-          </a>
-
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
             className="lg:hidden p-1.5 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -212,7 +204,7 @@ const Navbar = () => {
 
       {/* Mobile Drawer Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-3 top-20 bg-white/95 backdrop-blur-2xl border border-gray-200/80 rounded-2xl shadow-2xl p-4 space-y-3 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="lg:hidden fixed inset-x-3 top-20 max-h-[calc(100vh-6rem)] overflow-y-auto bg-white/95 backdrop-blur-2xl border border-gray-200/80 rounded-2xl shadow-2xl p-4 space-y-3 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="grid grid-cols-2 gap-2">
             {[...primaryNavLinks, ...secondaryNavLinks].map((link) => (
               <Link
@@ -234,6 +226,15 @@ const Navbar = () => {
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
             {isAuthenticated ? (
               <>
+                {isAdmin && (
+                  <Link
+                    to="/admin/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-white bg-slate-900 rounded-xl"
+                  >
+                    <ShieldCheck size={15} className="text-amber-400" /> Admin Dashboard
+                  </Link>
+                )}
                 <Link
                   to="/my-orders"
                   onClick={() => setMobileMenuOpen(false)}
