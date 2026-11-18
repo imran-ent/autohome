@@ -11,11 +11,91 @@ import {
   Droplets,
   Image as ImageIcon,
   Home as HomeIcon,
+  CheckCircle2,
 } from "lucide-react";
 import { productService } from "../../services/productService.js";
 import { Button } from "../../components/common/Button.jsx";
 import { formatCurrency } from "../../utils/helpers.js";
 import toast from "react-hot-toast";
+
+const FormattedDescription = ({ text }) => {
+  if (!text) return null;
+
+  // Normalize pasted newlines, bullet symbols, and extra spaces
+  const normalized = String(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\t+/g, " ")
+    .replace(/\s*•\s*/g, "\n• ")
+    .trim();
+
+  const rawLines = normalized
+    .split(/\n+/)
+    .map((line) => line.replace(/\s{2,}/g, " ").trim())
+    .filter(Boolean);
+
+  if (rawLines.length === 0) return null;
+
+  const bulletRegex = /^([•\-*✓✔►▪]|\d+[.)])\s*/;
+
+  return (
+    <div className="space-y-2.5 text-sm text-gray-700 leading-relaxed">
+      {rawLines.map((line, index) => {
+        const isBullet = bulletRegex.test(line);
+        const cleanLine = line.replace(bulletRegex, "").trim();
+
+        // Check for "Key: Value" spec format (e.g., "Warranty: 36 Months")
+        const colonIdx = cleanLine.indexOf(":");
+        const hasKeyValue =
+          colonIdx > 1 &&
+          colonIdx <= 32 &&
+          !cleanLine.startsWith("http") &&
+          colonIdx < cleanLine.length - 1;
+
+        if (isBullet) {
+          return (
+            <div key={index} className="flex items-start gap-2.5 pl-0.5">
+              <span className="mt-2 w-1.5 h-1.5 rounded-full bg-navy shrink-0" />
+              <div className="flex-1">
+                {hasKeyValue ? (
+                  <>
+                    <span className="font-semibold text-gray-900">
+                      {cleanLine.slice(0, colonIdx + 1)}
+                    </span>{" "}
+                    <span>{cleanLine.slice(colonIdx + 1).trim()}</span>
+                  </>
+                ) : (
+                  cleanLine
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        if (hasKeyValue) {
+          return (
+            <div
+              key={index}
+              className="flex flex-wrap items-baseline gap-x-1.5 py-1 border-b border-gray-100 last:border-b-0"
+            >
+              <span className="font-semibold text-gray-900">
+                {cleanLine.slice(0, colonIdx + 1)}
+              </span>
+              <span className="text-gray-700">
+                {cleanLine.slice(colonIdx + 1).trim()}
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <p key={index} className="text-gray-700 leading-relaxed">
+            {cleanLine}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -106,7 +186,7 @@ const ProductDetail = () => {
       <div className="max-w-7xl mx-auto">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors mb-6 group"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-blue transition-colors mb-6 group cursor-pointer"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           <span>Back to Catalog</span>
@@ -166,7 +246,7 @@ const ProductDetail = () => {
             {images.length > 1 && (
               <div>
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <ImageIcon size={13} className="text-blue-600" />
+                  <ImageIcon size={13} className="text-blue" />
                   <span>Select View Angle ({images.length} available)</span>
                 </p>
                 <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
@@ -176,7 +256,7 @@ const ProductDetail = () => {
                       onClick={() => setActiveImgIndex(idx)}
                       className={`relative w-20 h-20 rounded-2xl border-2 bg-white overflow-hidden shrink-0 transition-all ${
                         activeImgIndex === idx
-                          ? "border-blue-600 ring-2 ring-blue-600/20 shadow-xs scale-105"
+                          ? "border-navy ring-2 ring-navy/20 shadow-xs scale-105"
                           : "border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300"
                       }`}
                     >
@@ -197,7 +277,7 @@ const ProductDetail = () => {
             <div className="space-y-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider rounded-md border border-blue-100">
+                  <span className="px-2.5 py-0.5 bg-blue-50 text-blue text-xs font-bold uppercase tracking-wider rounded-md border border-blue-100">
                     {product.category}
                   </span>
                   {product.brand && (
@@ -214,7 +294,7 @@ const ProductDetail = () => {
                 {Array.isArray(product.suitableFor) && product.suitableFor.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5 mt-3">
                     <span className="text-xs font-semibold text-gray-500 flex items-center gap-1 mr-1">
-                      <HomeIcon size={13} className="text-blue-600" /> Suitable For:
+                      <HomeIcon size={13} className="text-blue" /> Suitable For:
                     </span>
                     {product.suitableFor.map((tag, i) => (
                       <span
@@ -247,12 +327,12 @@ const ProductDetail = () => {
                     )}
                   </div>
                   <span className="text-xs text-gray-500 block mt-1">
-                    Contact us for final price & old battery exchange offer
+                    Contact us for final price &amp; old battery exchange offer
                   </span>
                 </div>
                 {product.ahCapacity > 0 && (
                   <div className="text-right shrink-0">
-                    <span className="text-lg font-bold text-blue-600">{product.ahCapacity} Ah</span>
+                    <span className="text-lg font-bold text-blue">{product.ahCapacity} Ah</span>
                     <span className="text-xs text-gray-400 block">Battery Capacity</span>
                   </div>
                 )}
@@ -268,7 +348,7 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3">
-                  <Droplets size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  <Droplets size={18} className="text-blue shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-xs font-bold text-blue-950">
                       6 Months Free Distilled Water
@@ -280,7 +360,7 @@ const ProductDetail = () => {
 
               <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-3">
                 <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Battery size={15} className="text-blue-600" /> Technical Details
+                  <Battery size={15} className="text-blue" /> Technical Details
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                   <div className="p-2.5 rounded-lg bg-gray-50">
@@ -304,12 +384,28 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {product.description && (
-                <div>
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                    Product Description
+              {Array.isArray(product.pros) && product.pros.length > 0 && (
+                <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-2.5">
+                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Key Highlights
                   </h3>
-                  <p className="text-xs text-gray-600 leading-relaxed">{product.description}</p>
+                  <ul className="space-y-1.5">
+                    {product.pros.map((pro, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                        <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                        <span>{pro}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {product.description && (
+                <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-3">
+                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Product Description &amp; Features
+                  </h3>
+                  <FormattedDescription text={product.description} />
                 </div>
               )}
             </div>
@@ -333,7 +429,7 @@ const ProductDetail = () => {
               </div>
               <p className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1">
                 <ShieldCheck size={14} className="text-emerald-600" /> 100% Genuine Manufacturer
-                Guarantee & Doorstep Support
+                Guarantee &amp; Doorstep Support
               </p>
             </div>
           </div>

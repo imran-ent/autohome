@@ -8,6 +8,127 @@ import { Select } from "../../components/common/Select.jsx";
 import { Input } from "../../components/common/Input.jsx";
 import { formatCurrency } from "../../utils/helpers.js";
 
+const CatalogueCard = ({ p, navigate }) => {
+  const [imgError, setImgError] = useState(false);
+
+  const available = p.availableStock ?? p.currentStock ?? 0;
+  const isOutOfStock = available <= 0;
+  const hasDiscount =
+    Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
+  const discountPercent = hasDiscount
+    ? Math.round(((Number(p.mrp) - Number(p.sellingPrice)) / Number(p.mrp)) * 100)
+    : 0;
+
+  const capabilityTags =
+    Array.isArray(p.suitableFor) && p.suitableFor.length > 0
+      ? p.suitableFor
+      : p.ahCapacity >= 150
+      ? ["1 BHK Home, 2 BHK Home, Shops"]
+      : p.ahCapacity > 0
+      ? [`${p.ahCapacity}Ah Capacity`, p.warranty || "Official Warranty"]
+      : [p.warranty || "Genuine Product"];
+
+  const waUrl = `https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
+    p.name
+  )}%20(${encodeURIComponent(p.brand)}%20${encodeURIComponent(
+    p.sku || ""
+  )}).%20Please%20confirm%20availability,%20compatibility%20and%20final%20price.`;
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md transition-all group flex flex-col justify-between overflow-hidden">
+      <div>
+        {/* Image + Top-Left Discount Pill */}
+        <div
+          onClick={() => navigate(`/products/${p._id}`)}
+          className="relative h-40 sm:h-56 bg-white border-b border-gray-100 flex items-center justify-center overflow-hidden cursor-pointer p-3 sm:p-5"
+        >
+          {discountPercent > 0 && (
+            <span className="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] sm:text-xs font-extrabold shadow-xs">
+              {discountPercent}% OFF
+            </span>
+          )}
+
+          {isOutOfStock && (
+            <span className="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+              Out of Stock
+            </span>
+          )}
+
+          {p.images && p.images.length > 0 && !imgError ? (
+            <img
+              src={p.images[0]}
+              alt={p.name}
+              onError={() => setImgError(true)}
+              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50/70 rounded-xl">
+              <Battery size={36} />
+            </div>
+          )}
+        </div>
+
+        {/* Brand, Title, Capability Pills & Price */}
+        <div className="p-3 sm:p-5 pb-2 sm:pb-3">
+          <p className="text-[11px] sm:text-xs font-extrabold text-blue uppercase tracking-wider mb-1">
+            {p.brand}
+          </p>
+
+          <Link to={`/products/${p._id}`}>
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-2 group-hover:text-blue transition-colors line-clamp-2 leading-snug">
+              {p.name}
+            </h3>
+          </Link>
+
+          {/* Capability / Suitable For Pills */}
+          <div className="flex flex-wrap gap-1 mb-3">
+            <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium leading-tight">
+              {capabilityTags.join(", ")}
+            </span>
+            {p.batteryType && (
+              <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium">
+                {p.batteryType}
+              </span>
+            )}
+          </div>
+
+          {/* Actual Price + Strikethrough MRP */}
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-base sm:text-xl font-extrabold text-gray-900">
+              {p.sellingPrice ? formatCurrency(p.sellingPrice) : "Contact for price"}
+            </span>
+            {hasDiscount && (
+              <span className="text-xs sm:text-sm text-gray-400 line-through">
+                {formatCurrency(p.mrp)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Side-by-Side Buttons */}
+      <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => navigate(`/products/${p._id}`)}
+          style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
+          className="w-full py-2.5 px-3 bg-navy hover:opacity-90 text-white text-xs font-bold rounded-xl transition-opacity inline-flex items-center justify-center shadow-xs cursor-pointer"
+        >
+          View Details
+        </button>
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-2.5 px-3 bg-white hover:bg-green-50 text-green-700 border border-green-600 text-xs font-bold rounded-xl transition-colors inline-flex items-center justify-center"
+        >
+          Send Enquiry
+        </a>
+      </div>
+    </div>
+  );
+};
+
 const Batteries = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -91,14 +212,6 @@ const Batteries = () => {
   const resetFilters = () => {
     setFilters({ category: "", brand: "", suitableFor: "", search: "" });
     setSearchParams({}, { replace: true });
-  };
-
-  const waLink = (p) => {
-    return `https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
-      p.name
-    )}%20(${encodeURIComponent(p.brand)}%20${encodeURIComponent(
-      p.sku || ""
-    )}).%20Please%20confirm%20availability,%20compatibility%20and%20final%20price.`;
   };
 
   const hasActiveFilters = Boolean(
@@ -192,7 +305,7 @@ const Batteries = () => {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {loading ? (
           <div className="col-span-full py-20 text-center">
-            <div className="animate-spin h-8 w-8 border-4 border-blue border-t-transparent rounded-full mx-auto mb-4" />
+            <div className="animate-spin h-8 w-8 border-4 border-navy border-t-transparent rounded-full mx-auto mb-4" />
             <p className="text-gray-500">Loading products...</p>
           </div>
         ) : products.length === 0 ? (
@@ -209,119 +322,7 @@ const Batteries = () => {
             )}
           </div>
         ) : (
-          products.map((p) => {
-            const available = p.availableStock ?? p.currentStock ?? 0;
-            const isOutOfStock = available <= 0;
-            const hasDiscount =
-              Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
-            const discountPercent = hasDiscount
-              ? Math.round(((Number(p.mrp) - Number(p.sellingPrice)) / Number(p.mrp)) * 100)
-              : 0;
-
-            const capabilityTags =
-              Array.isArray(p.suitableFor) && p.suitableFor.length > 0
-                ? p.suitableFor
-                : p.ahCapacity >= 150
-                ? ["1 BHK Home, 2 BHK Home, Shops"]
-                : p.ahCapacity > 0
-                ? [`${p.ahCapacity}Ah Capacity`, p.warranty || "Official Warranty"]
-                : [p.warranty || "Genuine Product"];
-
-            return (
-              <div
-                key={p._id}
-                className="rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md transition-all group flex flex-col justify-between overflow-hidden"
-              >
-                <div>
-                  {/* Image + Top-Left Discount Pill */}
-                  <div
-                    onClick={() => navigate(`/products/${p._id}`)}
-                    className="relative h-40 sm:h-56 bg-white border-b border-gray-100 flex items-center justify-center overflow-hidden cursor-pointer p-3 sm:p-5"
-                  >
-                    {discountPercent > 0 && (
-                      <span className="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] sm:text-xs font-extrabold shadow-xs">
-                        {discountPercent}% OFF
-                      </span>
-                    )}
-
-                    {isOutOfStock && (
-                      <span className="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
-                        Out of Stock
-                      </span>
-                    )}
-
-                    {p.images && p.images.length > 0 ? (
-                      <img
-                        src={p.images[0]}
-                        alt={p.name}
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <Battery size={36} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Brand, Title, Capability Pills & Price */}
-                  <div className="p-3 sm:p-5 pb-2 sm:pb-3">
-                    <p className="text-[11px] sm:text-xs font-extrabold text-blue-600 uppercase tracking-wider mb-1">
-                      {p.brand}
-                    </p>
-
-                    <Link to={`/products/${p._id}`}>
-                      <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
-                        {p.name}
-                      </h3>
-                    </Link>
-
-                    {/* Capability / Suitable For Pills */}
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium leading-tight">
-                        {capabilityTags.join(", ")}
-                      </span>
-                      {p.batteryType && (
-                        <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium">
-                          {p.batteryType}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Actual Price + Strikethrough MRP */}
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      <span className="text-base sm:text-xl font-extrabold text-gray-900">
-                        {p.sellingPrice ? formatCurrency(p.sellingPrice) : "Contact for price"}
-                      </span>
-                      {hasDiscount && (
-                        <span className="text-xs sm:text-sm text-gray-400 line-through">
-                          {formatCurrency(p.mrp)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Side-by-Side Buttons */}
-                <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-2 flex flex-col sm:flex-row gap-1.5 sm:gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/products/${p._id}`)}
-                    className="w-full sm:flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors text-center"
-                  >
-                    View Details
-                  </button>
-                  <a
-                    href={waLink(p)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:flex-1 py-2 px-3 bg-white hover:bg-green-50 text-green-700 border border-green-600 text-xs font-bold rounded-xl transition-colors text-center"
-                  >
-                    Send Enquiry
-                  </a>
-                </div>
-              </div>
-            );
-          })
+          products.map((p) => <CatalogueCard key={p._id} p={p} navigate={navigate} />)
         )}
       </div>
     </div>

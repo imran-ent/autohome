@@ -17,6 +17,12 @@ import { Card } from "../../components/common/Card.jsx";
 import { productService } from "../../services/productService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
+const FEATURED_CATEGORIES = [
+  "Inverter Batteries",
+  "Lithium Batteries",
+  "Combo Home Inverter & Batteries",
+];
+
 const CategoryIllustration = ({ type }) => {
   switch (type) {
     case "home-inverter":
@@ -157,7 +163,7 @@ const CategoryCard = ({ item, onClick }) => {
   );
 };
 
-const ProductCard = ({ p, navigate }) => {
+const FeaturedProductCard = ({ p, navigate }) => {
   const [imgError, setImgError] = useState(false);
 
   const available = p.availableStock ?? p.currentStock ?? 0;
@@ -212,8 +218,8 @@ const ProductCard = ({ p, navigate }) => {
               className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 bg-gray-50/70 rounded-xl">
-              <Battery size={38} />
+            <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50/70 rounded-xl">
+              <Battery size={36} />
             </div>
           )}
         </div>
@@ -263,7 +269,8 @@ const ProductCard = ({ p, navigate }) => {
         <button
           type="button"
           onClick={() => navigate(`/products/${p._id}`)}
-          className="w-full py-2.5 px-3 bg-navy hover:opacity-90 text-white text-xs font-bold rounded-xl transition-all inline-flex items-center justify-center shadow-xs"
+          style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
+          className="w-full py-2.5 px-3 bg-navy hover:opacity-90 text-white text-xs font-bold rounded-xl transition-opacity inline-flex items-center justify-center shadow-xs cursor-pointer"
         >
           View Details
         </button>
@@ -281,7 +288,12 @@ const ProductCard = ({ p, navigate }) => {
 };
 
 const Home = () => {
-  const [featured, setFeatured] = useState([]);
+  const [featuredByCat, setFeaturedByCat] = useState({
+    "Inverter Batteries": [],
+    "Lithium Batteries": [],
+    "Combo Home Inverter & Batteries": [],
+  });
+  const [activeTab, setActiveTab] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -358,17 +370,68 @@ const Home = () => {
 
   useEffect(() => {
     const loadFeatured = async () => {
+      setLoading(true);
       try {
-        const response = await productService.getAll({ isActive: "true", limit: 6 });
-        setFeatured(response.data?.data?.products || response.data?.data || []);
+        const [invRes, lithRes, comboRes] = await Promise.all([
+          productService.getAll({
+            category: "Inverter Batteries",
+            isActive: "true",
+            limit: 6,
+          }),
+          productService.getAll({
+            category: "Lithium Batteries",
+            isActive: "true",
+            limit: 6,
+          }),
+          productService.getAll({
+            category: "Combo Home Inverter & Batteries",
+            isActive: "true",
+            limit: 6,
+          }),
+        ]);
+
+        setFeaturedByCat({
+          "Inverter Batteries":
+            invRes.data?.data?.products || invRes.data?.data || [],
+          "Lithium Batteries":
+            lithRes.data?.data?.products || lithRes.data?.data || [],
+          "Combo Home Inverter & Batteries":
+            comboRes.data?.data?.products || comboRes.data?.data || [],
+        });
       } catch (e) {
-        setFeatured([]);
+        setFeaturedByCat({
+          "Inverter Batteries": [],
+          "Lithium Batteries": [],
+          "Combo Home Inverter & Batteries": [],
+        });
       } finally {
         setLoading(false);
       }
     };
     loadFeatured();
   }, []);
+
+  // Build balanced list from Inverter Batteries, Lithium Batteries & Combos
+  const getDisplayedFeatured = () => {
+    if (activeTab !== "ALL") {
+      return (featuredByCat[activeTab] || []).slice(0, 6);
+    }
+
+    const inv = featuredByCat["Inverter Batteries"] || [];
+    const lith = featuredByCat["Lithium Batteries"] || [];
+    const combo = featuredByCat["Combo Home Inverter & Batteries"] || [];
+
+    const combined = [];
+    const maxLen = Math.max(inv.length, lith.length, combo.length);
+    for (let i = 0; i < maxLen && combined.length < 6; i++) {
+      if (inv[i] && combined.length < 6) combined.push(inv[i]);
+      if (lith[i] && combined.length < 6) combined.push(lith[i]);
+      if (combo[i] && combined.length < 6) combined.push(combo[i]);
+    }
+    return combined;
+  };
+
+  const displayedFeatured = getDisplayedFeatured();
 
   return (
     <div className="animate-fade-in">
@@ -434,14 +497,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured Products (Curated from Inverter Batteries, Lithium Batteries & Combos) */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="container-premium px-3 sm:px-6">
-          <div className="flex items-center justify-between gap-4 mb-8 sm:mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-charcoal">Featured Products</h2>
               <p className="text-xs sm:text-base text-gray-500">
-                Our most trusted battery & inverter solutions
+                Top Inverter Batteries, Lithium Batteries &amp; Home Combos
               </p>
             </div>
             <Link
@@ -452,19 +515,62 @@ const Home = () => {
             </Link>
           </div>
 
+          {/* Category Tabs for Featured Section */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            <button
+              type="button"
+              onClick={() => setActiveTab("ALL")}
+              style={
+                activeTab === "ALL"
+                  ? { backgroundColor: "#0f172a", color: "#ffffff" }
+                  : undefined
+              }
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors cursor-pointer ${
+                activeTab === "ALL"
+                  ? "bg-navy text-white border-navy"
+                  : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+              }`}
+            >
+              All Featured
+            </button>
+            {FEATURED_CATEGORIES.map((catName) => (
+              <button
+                key={catName}
+                type="button"
+                onClick={() => setActiveTab(catName)}
+                style={
+                  activeTab === catName
+                    ? { backgroundColor: "#0f172a", color: "#ffffff" }
+                    : undefined
+                }
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors cursor-pointer ${
+                  activeTab === catName
+                    ? "bg-navy text-white border-navy"
+                    : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                }`}
+              >
+                {catName}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {loading ? (
               <div className="col-span-full py-16 flex justify-center">
                 <div className="animate-spin h-8 w-8 border-4 border-navy border-t-transparent rounded-full" />
               </div>
-            ) : featured.length > 0 ? (
-              featured.map((p) => <ProductCard key={p._id} p={p} navigate={navigate} />)
+            ) : displayedFeatured.length > 0 ? (
+              displayedFeatured.map((p) => (
+                <FeaturedProductCard key={p._id} p={p} navigate={navigate} />
+              ))
             ) : (
               <div className="col-span-full py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mx-auto mb-4">
                   <Battery size={32} />
                 </div>
-                <p className="text-gray-500">No featured products available.</p>
+                <p className="text-gray-500">
+                  No featured products found in this category yet.
+                </p>
               </div>
             )}
           </div>
@@ -538,6 +644,7 @@ const Home = () => {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a
                   href="tel:+919789688756"
+                  style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
                   className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
                 >
                   <Phone size={15} /> +91 97896 88756
@@ -565,6 +672,7 @@ const Home = () => {
                 href="https://maps.app.goo.gl/Eo7VaAAysAE992YH8?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
+                style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
               >
                 <MapPin size={15} /> Open Google Maps

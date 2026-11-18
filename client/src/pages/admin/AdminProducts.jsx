@@ -9,6 +9,7 @@ import {
   X,
   Upload,
   Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
 import { productService } from "../../services/productService.js";
 import toast from "react-hot-toast";
@@ -58,6 +59,18 @@ const getStockBadge = (stock, minLevel = 5) => {
     label: "In Stock",
     className: "bg-emerald-50 text-emerald-700 border-emerald-200",
   };
+};
+
+const cleanPastedDescription = (raw) => {
+  if (!raw) return "";
+  return raw
+    .replace(/\r\n/g, "\n")
+    .replace(/\t+/g, " ")
+    .replace(/\s*•\s*/g, "\n• ")
+    .split(/\n+/)
+    .map((line) => line.replace(/\s{2,}/g, " ").trim())
+    .filter(Boolean)
+    .join("\n");
 };
 
 const AdminProducts = () => {
@@ -271,7 +284,7 @@ const AdminProducts = () => {
         minStockLevel: Number(form.minStockLevel) || 5,
         supplierAvailable: form.supplierAvailable === true,
         supplierLeadTime: form.supplierLeadTime.trim(),
-        description: form.description.trim(),
+        description: cleanPastedDescription(form.description),
         suitableFor: form.suitableFor
           ? form.suitableFor.split(",").map((s) => s.trim()).filter(Boolean)
           : [],
@@ -326,7 +339,7 @@ const AdminProducts = () => {
       <div className="max-w-7xl mx-auto p-8">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Products</h1>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+          <div className="animate-spin h-8 w-8 border-4 border-navy border-t-transparent rounded-full" />
         </div>
       </div>
     );
@@ -341,7 +354,7 @@ const AdminProducts = () => {
             Product Management
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Add, edit, upload images, and monitor battery inventory & specs
+            Add, edit, upload images, and monitor battery inventory &amp; specs
           </p>
         </div>
         <Button
@@ -382,7 +395,7 @@ const AdminProducts = () => {
             disabled={refreshing}
             className="w-full md:w-auto flex items-center justify-center gap-1.5 self-end"
           >
-            <RefreshCw size={16} className={refreshing ? "animate-spin text-blue-600" : ""} />
+            <RefreshCw size={16} className={refreshing ? "animate-spin text-blue" : ""} />
             <span>Refresh</span>
           </Button>
         </div>
@@ -433,7 +446,7 @@ const AdminProducts = () => {
                           {p.brand} {p.ahCapacity ? `• ${p.ahCapacity}Ah` : ""}
                         </div>
                         {Array.isArray(p.suitableFor) && p.suitableFor.length > 0 && (
-                          <div className="text-[11px] text-blue-600 mt-0.5">
+                          <div className="text-[11px] text-blue mt-0.5">
                             {p.suitableFor.join(", ")}
                           </div>
                         )}
@@ -469,7 +482,7 @@ const AdminProducts = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => openEdit(p)}
-                          className="text-blue-600 hover:bg-blue-50"
+                          className="text-blue hover:bg-blue-50"
                         >
                           <Edit size={15} className="mr-1" /> Edit
                         </Button>
@@ -521,7 +534,7 @@ const AdminProducts = () => {
               <div className="p-4 rounded-xl border border-gray-200 bg-gray-50/70 space-y-3">
                 <label className="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
-                    <ImageIcon size={15} className="text-blue-600" /> Product Images
+                    <ImageIcon size={15} className="text-blue" /> Product Images
                   </span>
                   <span className="text-[11px] font-normal text-gray-500 lowercase">
                     ({form.images.length} added)
@@ -529,7 +542,7 @@ const AdminProducts = () => {
                 </label>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <label className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-blue-300 rounded-xl bg-white hover:bg-blue-50/50 cursor-pointer transition-colors text-blue-600 font-semibold text-xs">
+                  <label className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 cursor-pointer transition-colors text-navy font-semibold text-xs">
                     <Upload size={16} />
                     <span>Upload Image Files</span>
                     <input
@@ -548,7 +561,7 @@ const AdminProducts = () => {
                     placeholder="Or paste image URL (e.g., https://...)"
                     value={imageUrlInput}
                     onChange={(e) => setImageUrlInput(e.target.value)}
-                    className="flex-1 text-xs px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="flex-1 text-xs px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy"
                   />
                   <Button
                     type="button"
@@ -618,7 +631,7 @@ const AdminProducts = () => {
               </div>
 
               {/* Capability / Suitable For */}
-              <div className="p-4 rounded-xl border border-blue-100 bg-blue-50/40 space-y-2.5">
+              <div className="p-4 rounded-xl border border-gray-200 bg-gray-50/60 space-y-2.5">
                 <Input
                   label="Capability / Suitable For (shown below product title)"
                   value={form.suitableFor}
@@ -635,10 +648,15 @@ const AdminProducts = () => {
                         key={preset}
                         type="button"
                         onClick={() => toggleSuitableTag(preset)}
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+                        style={
                           active
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"
+                            ? { backgroundColor: "#0f172a", color: "#ffffff" }
+                            : undefined
+                        }
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors cursor-pointer ${
+                          active
+                            ? "bg-navy text-white border-navy"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
                         }`}
                       >
                         {active ? "✓ " : "+ "}
@@ -652,7 +670,7 @@ const AdminProducts = () => {
               {/* Technical Specs */}
               <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 space-y-3">
                 <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Battery size={15} className="text-blue-600" /> Technical Specifications
+                  <Battery size={15} className="text-blue" /> Technical Specifications
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <Input
@@ -673,13 +691,13 @@ const AdminProducts = () => {
                     label="Battery Type"
                     value={form.batteryType}
                     onChange={(e) => handleChange("batteryType", e.target.value)}
-                    placeholder="Pure Sine Wave / LiFePO4"
+                    placeholder="Pure Sine Wave / Tubular"
                   />
                   <Input
                     label="Warranty"
                     value={form.warranty}
                     onChange={(e) => handleChange("warranty", e.target.value)}
-                    placeholder="60 Months"
+                    placeholder="36 Months"
                   />
                 </div>
               </div>
@@ -723,26 +741,46 @@ const AdminProducts = () => {
                 />
               </div>
 
-              {/* Descriptions & Details */}
-              <Input
-                label="Product Description"
-                value={form.description}
-                onChange={(e) => handleChange("description", e.target.value)}
-                placeholder="Brief summary of product features..."
-              />
+              {/* Multi-line Product Description with Auto-Clean */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-gray-700">
+                    Product Description &amp; Features (paste bullet points or specs)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleChange("description", cleanPastedDescription(form.description));
+                      toast.success("Description formatting cleaned");
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-navy hover:underline cursor-pointer"
+                  >
+                    <Sparkles size={12} /> Clean &amp; Format Text
+                  </button>
+                </div>
+                <textarea
+                  rows={5}
+                  value={form.description}
+                  onChange={(e) => handleChange("description", e.target.value)}
+                  placeholder={
+                    "Paste features or specifications here, one per line:\n- Pure Sine Wave Output for silent operation\n- Backup Time: Up to 4 Hours on 1 BHK load\n- Warranty: 36 Months On-Site"
+                  }
+                  className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-xs text-gray-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
+                />
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Pros (comma separated)"
                   value={form.pros}
                   onChange={(e) => handleChange("pros", e.target.value)}
-                  placeholder="Fast charging, 10-year life"
+                  placeholder="Long backup, Low maintenance"
                 />
                 <Input
                   label="Cons (comma separated)"
                   value={form.cons}
                   onChange={(e) => handleChange("cons", e.target.value)}
-                  placeholder="Higher upfront cost"
+                  placeholder="Heavyweight"
                 />
               </div>
 
@@ -753,7 +791,7 @@ const AdminProducts = () => {
                     type="checkbox"
                     checked={form.isActive}
                     onChange={(e) => handleChange("isActive", e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="w-4 h-4 rounded text-navy focus:ring-navy border-gray-300"
                   />
                   <span className="text-xs font-semibold text-gray-700">
                     Active Product (Visible on customer store)
@@ -765,7 +803,7 @@ const AdminProducts = () => {
                     type="checkbox"
                     checked={form.supplierAvailable}
                     onChange={(e) => handleChange("supplierAvailable", e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="w-4 h-4 rounded text-navy focus:ring-navy border-gray-300"
                   />
                   <span className="text-xs font-semibold text-gray-700">
                     Available from Supplier (On-demand order fallback)
