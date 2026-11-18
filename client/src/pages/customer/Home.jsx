@@ -136,7 +136,7 @@ const CategoryCard = ({ item, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="group cursor-pointer rounded-2xl border border-gray-200/80 bg-white p-3 sm:p-4 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-center text-center"
+      className="group cursor-pointer rounded-2xl border border-gray-200/80 bg-white p-3 sm:p-4 shadow-xs hover:shadow-md hover:border-gray-300 transition-all flex flex-col items-center text-center"
     >
       <div className="w-full h-24 sm:h-28 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center mb-3 group-hover:scale-[1.03] transition-transform">
         {!imgError ? (
@@ -150,9 +150,132 @@ const CategoryCard = ({ item, onClick }) => {
           <CategoryIllustration type={item.slug} />
         )}
       </div>
-      <h3 className="text-xs sm:text-sm font-bold text-charcoal group-hover:text-blue-600 transition-colors leading-snug">
+      <h3 className="text-xs sm:text-sm font-bold text-charcoal group-hover:text-blue transition-colors leading-snug">
         {item.name}
       </h3>
+    </div>
+  );
+};
+
+const ProductCard = ({ p, navigate }) => {
+  const [imgError, setImgError] = useState(false);
+
+  const available = p.availableStock ?? p.currentStock ?? 0;
+  const isOutOfStock = available <= 0;
+
+  const hasDiscount =
+    Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
+  const discountPercent = hasDiscount
+    ? Math.round(((Number(p.mrp) - Number(p.sellingPrice)) / Number(p.mrp)) * 100)
+    : 0;
+
+  const capabilityTags =
+    Array.isArray(p.suitableFor) && p.suitableFor.length > 0
+      ? p.suitableFor
+      : p.ahCapacity >= 150
+      ? ["1 BHK Home, 2 BHK Home, Shops"]
+      : p.ahCapacity > 0
+      ? [`${p.ahCapacity}Ah Capacity`, p.warranty || "Official Warranty"]
+      : [p.warranty || "Genuine Product"];
+
+  const waUrl = `https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
+    p.name
+  )}%20(${encodeURIComponent(p.brand)}%20${encodeURIComponent(
+    p.sku || ""
+  )}).%20Please%20confirm%20availability%20and%20final%20price.`;
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md transition-all group flex flex-col justify-between overflow-hidden">
+      <div>
+        {/* Top Discount Badge + Product Image */}
+        <div
+          onClick={() => navigate(`/products/${p._id}`)}
+          className="relative h-40 sm:h-56 bg-white border-b border-gray-100 flex items-center justify-center overflow-hidden cursor-pointer p-3 sm:p-5"
+        >
+          {discountPercent > 0 && (
+            <span className="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] sm:text-xs font-extrabold shadow-xs">
+              {discountPercent}% OFF
+            </span>
+          )}
+
+          {isOutOfStock && (
+            <span className="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+              Out of Stock
+            </span>
+          )}
+
+          {p.images && p.images.length > 0 && !imgError ? (
+            <img
+              src={p.images[0]}
+              alt={p.name}
+              onError={() => setImgError(true)}
+              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 bg-gray-50/70 rounded-xl">
+              <Battery size={38} />
+            </div>
+          )}
+        </div>
+
+        {/* Brand, Title, Capability Pills & Price */}
+        <div className="p-3 sm:p-5 pb-2 sm:pb-3">
+          <p className="text-[11px] sm:text-xs font-extrabold text-blue uppercase tracking-wider mb-1">
+            {p.brand}
+          </p>
+
+          <Link to={`/products/${p._id}`}>
+            <h3 className="text-sm sm:text-base font-bold text-charcoal mb-2 group-hover:text-blue transition-colors line-clamp-2 leading-snug">
+              {p.name}
+            </h3>
+          </Link>
+
+          {/* Capability / Suitable For Pills */}
+          <div className="flex flex-wrap gap-1 mb-3">
+            <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium leading-tight">
+              {capabilityTags.join(", ")}
+            </span>
+            {p.batteryType && (
+              <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium">
+                {p.batteryType}
+              </span>
+            )}
+          </div>
+
+          {/* Actual Price + Strikethrough MRP */}
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-base sm:text-xl font-extrabold text-charcoal">
+              {p.sellingPrice
+                ? `₹${new Intl.NumberFormat("en-IN").format(p.sellingPrice)}`
+                : "₹--"}
+            </span>
+            {hasDiscount && (
+              <span className="text-xs sm:text-sm text-gray-400 line-through">
+                ₹{new Intl.NumberFormat("en-IN").format(p.mrp)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Side-by-Side Action Buttons */}
+      <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => navigate(`/products/${p._id}`)}
+          className="w-full py-2.5 px-3 bg-navy hover:opacity-90 text-white text-xs font-bold rounded-xl transition-all inline-flex items-center justify-center shadow-xs"
+        >
+          View Details
+        </button>
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-2.5 px-3 bg-white hover:bg-green-50 text-green-700 border border-green-600 text-xs font-bold rounded-xl transition-colors inline-flex items-center justify-center"
+        >
+          Send Enquiry
+        </a>
+      </div>
     </div>
   );
 };
@@ -311,7 +434,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products (Amazon-style 2 columns on mobile) */}
+      {/* Featured Products */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="container-premium px-3 sm:px-6">
           <div className="flex items-center justify-between gap-4 mb-8 sm:mb-10">
@@ -332,129 +455,10 @@ const Home = () => {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {loading ? (
               <div className="col-span-full py-16 flex justify-center">
-                <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+                <div className="animate-spin h-8 w-8 border-4 border-navy border-t-transparent rounded-full" />
               </div>
             ) : featured.length > 0 ? (
-              featured.map((p) => {
-                const available = p.availableStock ?? p.currentStock ?? 0;
-                const isOutOfStock = available <= 0;
-
-                const hasDiscount =
-                  Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
-                const discountPercent = hasDiscount
-                  ? Math.round(((Number(p.mrp) - Number(p.sellingPrice)) / Number(p.mrp)) * 100)
-                  : 0;
-
-                const capabilityTags =
-                  Array.isArray(p.suitableFor) && p.suitableFor.length > 0
-                    ? p.suitableFor
-                    : p.ahCapacity >= 150
-                    ? ["1 BHK Home, 2 BHK Home, Shops"]
-                    : p.ahCapacity > 0
-                    ? [`${p.ahCapacity}Ah Capacity`, p.warranty || "Official Warranty"]
-                    : [p.warranty || "Genuine Product"];
-
-                return (
-                  <div
-                    key={p._id}
-                    className="rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md transition-all group flex flex-col justify-between overflow-hidden"
-                  >
-                    <div>
-                      {/* Top Discount Badge + Product Image */}
-                      <div
-                        onClick={() => navigate(`/products/${p._id}`)}
-                        className="relative h-40 sm:h-56 bg-white border-b border-gray-100 flex items-center justify-center overflow-hidden cursor-pointer p-3 sm:p-5"
-                      >
-                        {discountPercent > 0 && (
-                          <span className="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] sm:text-xs font-extrabold shadow-xs">
-                            {discountPercent}% OFF
-                          </span>
-                        )}
-
-                        {isOutOfStock && (
-                          <span className="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
-                            Out of Stock
-                          </span>
-                        )}
-
-                        {p.images && p.images.length > 0 ? (
-                          <img
-                            src={p.images[0]}
-                            alt={p.name}
-                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300">
-                            <Battery size={36} />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Brand, Title, Capability Pills & Price */}
-                      <div className="p-3 sm:p-5 pb-2 sm:pb-3">
-                        <p className="text-[11px] sm:text-xs font-extrabold text-blue-600 uppercase tracking-wider mb-1">
-                          {p.brand}
-                        </p>
-
-                        <Link to={`/products/${p._id}`}>
-                          <h3 className="text-sm sm:text-base font-bold text-charcoal mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
-                            {p.name}
-                          </h3>
-                        </Link>
-
-                        {/* Capability / Suitable For Pills */}
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium leading-tight">
-                            {capabilityTags.join(", ")}
-                          </span>
-                          {p.batteryType && (
-                            <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium">
-                              {p.batteryType}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Actual Price + Strikethrough MRP */}
-                        <div className="flex flex-wrap items-baseline gap-2">
-                          <span className="text-base sm:text-xl font-extrabold text-charcoal">
-                            {p.sellingPrice
-                              ? `₹${new Intl.NumberFormat("en-IN").format(p.sellingPrice)}`
-                              : "₹--"}
-                          </span>
-                          {hasDiscount && (
-                            <span className="text-xs sm:text-sm text-gray-400 line-through">
-                              ₹{new Intl.NumberFormat("en-IN").format(p.mrp)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Side-by-Side Action Buttons */}
-                    <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-2 flex flex-col sm:flex-row gap-1.5 sm:gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/products/${p._id}`)}
-                        className="w-full sm:flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors text-center"
-                      >
-                        View Details
-                      </button>
-                      <a
-                        href={`https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
-                          p.name
-                        )}%20(${encodeURIComponent(p.brand)}%20${encodeURIComponent(
-                          p.sku || ""
-                        )}).%20Please%20confirm%20availability%20and%20final%20price.`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full sm:flex-1 py-2 px-3 bg-white hover:bg-green-50 text-green-700 border border-green-600 text-xs font-bold rounded-xl transition-colors text-center"
-                      >
-                        Send Enquiry
-                      </a>
-                    </div>
-                  </div>
-                );
-              })
+              featured.map((p) => <ProductCard key={p._id} p={p} navigate={navigate} />)
             ) : (
               <div className="col-span-full py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mx-auto mb-4">
@@ -534,7 +538,7 @@ const Home = () => {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a
                   href="tel:+919789688756"
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:bg-blue-900 transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
                 >
                   <Phone size={15} /> +91 97896 88756
                 </a>
@@ -547,9 +551,9 @@ const Home = () => {
               </div>
             </Card>
 
-            <Card className="p-8 rounded-2xl border border-blue-100 bg-white text-center flex flex-col justify-between">
+            <Card className="p-8 rounded-2xl border border-gray-200 bg-white text-center flex flex-col justify-between">
               <div>
-                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-blue-600">
+                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-blue">
                   <MapPin size={26} />
                 </div>
                 <h3 className="text-lg font-bold text-charcoal mb-2">Visit Our Shop</h3>
@@ -561,7 +565,7 @@ const Home = () => {
                 href="https://maps.app.goo.gl/Eo7VaAAysAE992YH8?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
               >
                 <MapPin size={15} /> Open Google Maps
               </a>
