@@ -5,6 +5,16 @@ import { sendSuccess, sendError } from "../utils/responseHelper.js";
 
 const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+const CATEGORY_ALIASES = {
+  "Home Inverter": ["Home Inverter", "Inverters"],
+  "Inverter Batteries": ["Inverter Batteries", "Home Inverter Batteries"],
+  "Combo Home Inverter & Batteries": ["Combo Home Inverter & Batteries"],
+  "Lithium Batteries": ["Lithium Batteries", "Lithium Battery"],
+  "Two Wheeler": ["Two Wheeler", "Bike Batteries"],
+  "Three Wheeler": ["Three Wheeler", "Truck / Commercial Batteries"],
+  Car: ["Car", "Car Batteries"],
+};
+
 // @desc    Get all products (with filters)
 // @route   GET /api/products
 // @access  Public
@@ -12,6 +22,7 @@ const getProducts = asyncHandler(async (req, res) => {
   const {
     category,
     brand,
+    suitableFor,
     minAh,
     maxAh,
     minPrice,
@@ -25,8 +36,12 @@ const getProducts = asyncHandler(async (req, res) => {
 
   const filter = {};
 
-  if (category) filter.category = category;
+  if (category) {
+    const mapped = CATEGORY_ALIASES[category];
+    filter.category = mapped ? { $in: mapped } : category;
+  }
   if (brand) filter.brand = new RegExp(escapeRegex(brand), "i");
+  if (suitableFor) filter.suitableFor = new RegExp(escapeRegex(suitableFor), "i");
   if (voltage) filter.voltage = Number(voltage);
   if (isActive !== undefined) filter.isActive = isActive === "true";
   if (search) {
@@ -35,6 +50,7 @@ const getProducts = asyncHandler(async (req, res) => {
       { name: new RegExp(escapedSearch, "i") },
       { brand: new RegExp(escapedSearch, "i") },
       { sku: new RegExp(escapedSearch, "i") },
+      { suitableFor: new RegExp(escapedSearch, "i") },
     ];
   }
 

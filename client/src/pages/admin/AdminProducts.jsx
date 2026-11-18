@@ -20,12 +20,24 @@ import ConfirmDialog from "../../components/common/ConfirmDialog.jsx";
 import { formatCurrency } from "../../utils/helpers.js";
 
 const CATEGORIES = [
-  "Home Inverter Batteries",
-  "Bike Batteries",
-  "Car Batteries",
-  "Truck / Commercial Batteries",
-  "Inverters",
-  "Accessories",
+  "Home Inverter",
+  "Inverter Batteries",
+  "Combo Home Inverter & Batteries",
+  "Lithium Batteries",
+  "Two Wheeler",
+  "Three Wheeler",
+  "Car",
+];
+
+const SUITABLE_PRESETS = [
+  "1 BHK Home",
+  "2 BHK Home",
+  "3 BHK Home",
+  "Shops & Small Office",
+  "Lithium / LiFePO4",
+  "Bike / Scooty",
+  "Auto Rickshaw",
+  "Car",
 ];
 
 const getStockBadge = (stock, minLevel = 5) => {
@@ -66,7 +78,7 @@ const AdminProducts = () => {
     name: "",
     brand: "",
     sku: "",
-    category: "Home Inverter Batteries",
+    category: "Inverter Batteries",
     subCategory: "",
     ahCapacity: "",
     voltage: "",
@@ -81,6 +93,7 @@ const AdminProducts = () => {
     supplierAvailable: false,
     supplierLeadTime: "",
     description: "",
+    suitableFor: "",
     pros: "",
     cons: "",
     images: [],
@@ -121,7 +134,7 @@ const AdminProducts = () => {
       name: "",
       brand: "",
       sku: "",
-      category: "Home Inverter Batteries",
+      category: "Inverter Batteries",
       subCategory: "",
       ahCapacity: "",
       voltage: "",
@@ -136,6 +149,7 @@ const AdminProducts = () => {
       supplierAvailable: false,
       supplierLeadTime: "",
       description: "",
+      suitableFor: "",
       pros: "",
       cons: "",
       images: [],
@@ -152,7 +166,7 @@ const AdminProducts = () => {
       name: p.name || "",
       brand: p.brand || "",
       sku: p.sku || "",
-      category: p.category || "Home Inverter Batteries",
+      category: CATEGORIES.includes(p.category) ? p.category : "Inverter Batteries",
       subCategory: p.subCategory || "",
       ahCapacity: p.ahCapacity != null ? String(p.ahCapacity) : "",
       voltage: p.voltage != null ? String(p.voltage) : "",
@@ -167,6 +181,7 @@ const AdminProducts = () => {
       supplierAvailable: !!p.supplierAvailable,
       supplierLeadTime: p.supplierLeadTime || "",
       description: p.description || "",
+      suitableFor: Array.isArray(p.suitableFor) ? p.suitableFor.join(", ") : "",
       pros: Array.isArray(p.pros) ? p.pros.join(", ") : "",
       cons: Array.isArray(p.cons) ? p.cons.join(", ") : "",
       images: Array.isArray(p.images) ? p.images : p.images ? [p.images] : [],
@@ -177,6 +192,17 @@ const AdminProducts = () => {
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleSuitableTag = (tag) => {
+    const current = form.suitableFor
+      ? form.suitableFor.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    const exists = current.some((item) => item.toLowerCase() === tag.toLowerCase());
+    const next = exists
+      ? current.filter((item) => item.toLowerCase() !== tag.toLowerCase())
+      : [...current, tag];
+    handleChange("suitableFor", next.join(", "));
   };
 
   const handleFileUpload = (e) => {
@@ -246,6 +272,9 @@ const AdminProducts = () => {
         supplierAvailable: form.supplierAvailable === true,
         supplierLeadTime: form.supplierLeadTime.trim(),
         description: form.description.trim(),
+        suitableFor: form.suitableFor
+          ? form.suitableFor.split(",").map((s) => s.trim()).filter(Boolean)
+          : [],
         pros: form.pros
           ? form.pros.split(",").map((s) => s.trim()).filter(Boolean)
           : [],
@@ -403,6 +432,11 @@ const AdminProducts = () => {
                         <div className="text-xs text-gray-500">
                           {p.brand} {p.ahCapacity ? `• ${p.ahCapacity}Ah` : ""}
                         </div>
+                        {Array.isArray(p.suitableFor) && p.suitableFor.length > 0 && (
+                          <div className="text-[11px] text-blue-600 mt-0.5">
+                            {p.suitableFor.join(", ")}
+                          </div>
+                        )}
                       </td>
                       <td className="py-4 px-4 font-mono text-xs text-gray-700">
                         {p.sku || "—"}
@@ -564,7 +598,7 @@ const AdminProducts = () => {
                   label="Brand *"
                   value={form.brand}
                   onChange={(e) => handleChange("brand", e.target.value)}
-                  placeholder="e.g. Exide, SF Sonic"
+                  placeholder="e.g. Exide, SF Sonic, Microtek"
                 />
               </div>
 
@@ -581,6 +615,38 @@ const AdminProducts = () => {
                   onChange={(e) => handleChange("category", e.target?.value ?? e)}
                   options={CATEGORIES.map((c) => ({ value: c, label: c }))}
                 />
+              </div>
+
+              {/* Capability / Suitable For */}
+              <div className="p-4 rounded-xl border border-blue-100 bg-blue-50/40 space-y-2.5">
+                <Input
+                  label="Capability / Suitable For (shown below product title)"
+                  value={form.suitableFor}
+                  onChange={(e) => handleChange("suitableFor", e.target.value)}
+                  placeholder="e.g. 1 BHK Home, 2 BHK Home, Shops & Small Office"
+                />
+                <div className="flex flex-wrap gap-1.5">
+                  {SUITABLE_PRESETS.map((preset) => {
+                    const active = form.suitableFor
+                      .toLowerCase()
+                      .includes(preset.toLowerCase());
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => toggleSuitableTag(preset)}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+                          active
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"
+                        }`}
+                      >
+                        {active ? "✓ " : "+ "}
+                        {preset}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Technical Specs */}
@@ -607,13 +673,13 @@ const AdminProducts = () => {
                     label="Battery Type"
                     value={form.batteryType}
                     onChange={(e) => handleChange("batteryType", e.target.value)}
-                    placeholder="Tubular / Flat"
+                    placeholder="Pure Sine Wave / LiFePO4"
                   />
                   <Input
                     label="Warranty"
                     value={form.warranty}
                     onChange={(e) => handleChange("warranty", e.target.value)}
-                    placeholder="36 Months"
+                    placeholder="60 Months"
                   />
                 </div>
               </div>
@@ -625,21 +691,21 @@ const AdminProducts = () => {
                   type="number"
                   value={form.mrp}
                   onChange={(e) => handleChange("mrp", e.target.value)}
-                  placeholder="13500"
+                  placeholder="23857"
                 />
                 <Input
                   label="Purchase Price (₹)"
                   type="number"
                   value={form.purchasePrice}
                   onChange={(e) => handleChange("purchasePrice", e.target.value)}
-                  placeholder="8500"
+                  placeholder="12500"
                 />
                 <Input
                   label="Our Price (₹) *"
                   type="number"
                   value={form.sellingPrice}
                   onChange={(e) => handleChange("sellingPrice", e.target.value)}
-                  placeholder="11500"
+                  placeholder="15299"
                 />
                 <Input
                   label="Current Stock *"
@@ -670,13 +736,13 @@ const AdminProducts = () => {
                   label="Pros (comma separated)"
                   value={form.pros}
                   onChange={(e) => handleChange("pros", e.target.value)}
-                  placeholder="Long backup, Low maintenance"
+                  placeholder="Fast charging, 10-year life"
                 />
                 <Input
                   label="Cons (comma separated)"
                   value={form.cons}
                   onChange={(e) => handleChange("cons", e.target.value)}
-                  placeholder="Heavyweight"
+                  placeholder="Higher upfront cost"
                 />
               </div>
 

@@ -5,9 +5,7 @@ import {
   ArrowRight,
   Search,
   ShieldCheck,
-  Truck,
   Phone,
-  Car,
   Wrench,
   Droplets,
   Zap,
@@ -18,6 +16,146 @@ import { Button } from "../../components/common/Button.jsx";
 import { Card } from "../../components/common/Card.jsx";
 import { productService } from "../../services/productService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+
+const CategoryIllustration = ({ type }) => {
+  switch (type) {
+    case "home-inverter":
+      return (
+        <svg viewBox="0 0 180 110" className="w-full h-full p-2">
+          <rect x="22" y="26" width="136" height="60" rx="8" fill="#1e293b" />
+          <rect x="30" y="34" width="120" height="44" rx="4" fill="#0f172a" />
+          <rect x="42" y="46" width="44" height="18" rx="3" fill="#2563eb" opacity="0.85" />
+          <circle cx="105" cy="55" r="4" fill="#22c55e" />
+          <circle cx="118" cy="55" r="4" fill="#f59e0b" />
+          <circle cx="131" cy="55" r="4" fill="#94a3b8" />
+          <path d="M58 55h12" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+      );
+    case "inverter-batteries":
+      return (
+        <svg viewBox="0 0 180 110" className="w-full h-full p-2">
+          <rect x="48" y="14" width="16" height="8" rx="2" fill="#dc2626" />
+          <rect x="116" y="14" width="16" height="8" rx="2" fill="#1e293b" />
+          <rect x="36" y="22" width="108" height="74" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="2" />
+          <rect x="36" y="22" width="108" height="18" rx="6" fill="#1d4ed8" />
+          <rect x="52" y="50" width="76" height="28" rx="4" fill="#eff6ff" />
+          <path d="M92 54l-6 10h6l-2 10 8-11h-6l2-9z" fill="#2563eb" />
+        </svg>
+      );
+    case "combo":
+      return (
+        <svg viewBox="0 0 180 110" className="w-full h-full p-2">
+          <rect x="14" y="44" width="76" height="48" rx="6" fill="#1e293b" />
+          <rect x="22" y="54" width="28" height="12" rx="2" fill="#3b82f6" />
+          <circle cx="62" cy="60" r="3.5" fill="#22c55e" />
+          <circle cx="74" cy="60" r="3.5" fill="#f59e0b" />
+          <circle cx="96" cy="68" r="9" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+          <path d="M96 64v8M92 68h8" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
+          <rect x="114" y="20" width="10" height="6" rx="1.5" fill="#dc2626" />
+          <rect x="146" y="20" width="10" height="6" rx="1.5" fill="#1e293b" />
+          <rect x="108" y="26" width="56" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="2" />
+          <rect x="108" y="26" width="56" height="14" rx="5" fill="#dc2626" />
+          <rect x="116" y="48" width="40" height="24" rx="3" fill="#fef2f2" />
+        </svg>
+      );
+    case "lithium-batteries":
+      return (
+        <svg viewBox="0 0 180 110" className="w-full h-full p-2">
+          <rect x="50" y="14" width="14" height="8" rx="2" fill="#ef4444" />
+          <rect x="116" y="14" width="14" height="8" rx="2" fill="#0f172a" />
+          <rect x="38" y="22" width="104" height="74" rx="10" fill="#0f172a" stroke="#10b981" strokeWidth="2.5" />
+          <rect x="38" y="22" width="104" height="16" rx="8" fill="#059669" />
+          <rect x="54" y="46" width="72" height="36" rx="6" fill="#1e293b" />
+          <rect x="64" y="54" width="10" height="20" rx="2" fill="#10b981" />
+          <rect x="78" y="54" width="10" height="20" rx="2" fill="#10b981" />
+          <rect x="92" y="54" width="10" height="20" rx="2" fill="#34d399" />
+          <path d="M114 53l-5 9h5l-2 9 7-10h-5l2-8z" fill="#fbbf24" />
+        </svg>
+      );
+    case "two-wheeler":
+      return (
+        <svg viewBox="0 0 180 110" className="w-full h-full p-2">
+          <circle cx="46" cy="78" r="18" fill="none" stroke="#1e293b" strokeWidth="5" />
+          <circle cx="46" cy="78" r="6" fill="#64748b" />
+          <circle cx="134" cy="78" r="18" fill="none" stroke="#1e293b" strokeWidth="5" />
+          <circle cx="134" cy="78" r="6" fill="#64748b" />
+          <path
+            d="M46 78L72 52h34l18 26M72 52l-8-14h16M106 52l14-20h12"
+            stroke="#2563eb"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <path d="M66 44h36l10 12H62z" fill="#1e3a8a" />
+          <circle cx="135" cy="36" r="5" fill="#f59e0b" />
+        </svg>
+      );
+    case "three-wheeler":
+      return (
+        <svg viewBox="0 0 180 110" className="w-full h-full p-2">
+          <path
+            d="M44 24h64c12 0 20 8 22 20l8 28H36V34c0-6 4-10 8-10z"
+            fill="#facc15"
+            stroke="#ca8a04"
+            strokeWidth="2"
+          />
+          <path d="M44 24h64c8 0 14 4 17 10H38c1-6 3-10 6-10z" fill="#1e293b" />
+          <rect x="44" y="38" width="32" height="22" rx="3" fill="#1e293b" />
+          <path d="M98 36h24l6 22H98z" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.5" />
+          <rect x="36" y="60" width="104" height="16" rx="4" fill="#1e293b" />
+          <circle cx="54" cy="82" r="13" fill="#0f172a" />
+          <circle cx="54" cy="82" r="5" fill="#94a3b8" />
+          <circle cx="128" cy="82" r="13" fill="#0f172a" />
+          <circle cx="128" cy="82" r="5" fill="#94a3b8" />
+        </svg>
+      );
+    case "car":
+    default:
+      return (
+        <svg viewBox="0 0 180 110" className="w-full h-full p-2">
+          <path
+            d="M34 56l16-22h64l20 22h14c6 0 10 4 10 10v12H22V66c0-6 5-10 12-10z"
+            fill="#2563eb"
+          />
+          <path d="M54 38h54l14 18H42z" fill="#dbeafe" />
+          <line x1="82" y1="38" x2="82" y2="56" stroke="#2563eb" strokeWidth="3" />
+          <circle cx="50" cy="80" r="13" fill="#0f172a" />
+          <circle cx="50" cy="80" r="5" fill="#cbd5e1" />
+          <circle cx="130" cy="80" r="13" fill="#0f172a" />
+          <circle cx="130" cy="80" r="5" fill="#cbd5e1" />
+          <rect x="148" y="62" width="8" height="5" rx="2" fill="#fef08a" />
+        </svg>
+      );
+  }
+};
+
+const CategoryCard = ({ item, onClick }) => {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      onClick={onClick}
+      className="group cursor-pointer rounded-2xl border border-gray-200/80 bg-white p-3 sm:p-4 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-center text-center"
+    >
+      <div className="w-full h-24 sm:h-28 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center mb-3 group-hover:scale-[1.03] transition-transform">
+        {!imgError ? (
+          <img
+            src={item.image}
+            alt={item.name}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-contain p-2"
+          />
+        ) : (
+          <CategoryIllustration type={item.slug} />
+        )}
+      </div>
+      <h3 className="text-xs sm:text-sm font-bold text-charcoal group-hover:text-blue-600 transition-colors leading-snug">
+        {item.name}
+      </h3>
+    </div>
+  );
+};
 
 const Home = () => {
   const [featured, setFeatured] = useState([]);
@@ -36,24 +174,39 @@ const Home = () => {
 
   const categories = [
     {
-      name: "Home Inverter Batteries",
-      icon: Battery,
-      desc: "Power backup for homes and offices",
+      name: "Home Inverter",
+      slug: "home-inverter",
+      image: "/categories/home-inverter.png",
     },
     {
-      name: "Car Batteries",
-      icon: Car,
-      desc: "Reliable starting power for vehicles",
+      name: "Inverter Batteries",
+      slug: "inverter-batteries",
+      image: "/categories/inverter-batteries.png",
     },
     {
-      name: "Bike Batteries",
-      icon: Car,
-      desc: "Lightweight and durable two-wheeler batteries",
+      name: "Combo Home Inverter & Batteries",
+      slug: "combo",
+      image: "/categories/combo.png",
     },
     {
-      name: "Truck / Commercial Batteries",
-      icon: Truck,
-      desc: "Heavy-duty power for commercial vehicles",
+      name: "Lithium Batteries",
+      slug: "lithium-batteries",
+      image: "/categories/lithium-batteries.png",
+    },
+    {
+      name: "Two Wheeler",
+      slug: "two-wheeler",
+      image: "/categories/two-wheeler.png",
+    },
+    {
+      name: "Three Wheeler",
+      slug: "three-wheeler",
+      image: "/categories/three-wheeler.png",
+    },
+    {
+      name: "Car",
+      slug: "car",
+      image: "/categories/car.png",
     },
   ];
 
@@ -83,7 +236,7 @@ const Home = () => {
   useEffect(() => {
     const loadFeatured = async () => {
       try {
-        const response = await productService.getAll({ isActive: "true", limit: 4 });
+        const response = await productService.getAll({ isActive: "true", limit: 6 });
         setFeatured(response.data?.data?.products || response.data?.data || []);
       } catch (e) {
         setFeatured([]);
@@ -93,18 +246,6 @@ const Home = () => {
     };
     loadFeatured();
   }, []);
-
-  const statusLabel = (s) => {
-    if (s === "in_stock") return "In Stock";
-    if (s === "low_stock") return "Low Stock";
-    return "Out of Stock";
-  };
-
-  const statusColor = (s) => {
-    if (s === "in_stock") return "bg-green-50 text-green-700 border-green-100";
-    if (s === "low_stock") return "bg-yellow-50 text-yellow-700 border-yellow-100";
-    return "bg-red-50 text-red-700 border-red-100";
-  };
 
   return (
     <div className="animate-fade-in">
@@ -147,30 +288,25 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Category Section */}
-      <section className="py-20 bg-offwhite">
-        <div className="container-premium">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-charcoal mb-2">Explore by Category</h2>
-            <p className="text-gray-500">Find the perfect battery for your application</p>
+      {/* Shop by Category Section */}
+      <section className="py-16 sm:py-20 bg-offwhite">
+        <div className="container-premium px-3 sm:px-6">
+          <div className="flex items-center justify-center gap-4 mb-10 sm:mb-12">
+            <div className="h-px bg-gray-300 flex-1 max-w-[120px]" />
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal text-center">
+              Shop by Category
+            </h2>
+            <div className="h-px bg-gray-300 flex-1 max-w-[120px]" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <div
-                  key={cat.name}
-                  onClick={() => navigate(`/batteries?category=${encodeURIComponent(cat.name)}`)}
-                  className="card-premium cursor-pointer p-8 hover:elevated"
-                >
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue mb-4">
-                    <Icon size={24} strokeWidth={2.5} />
-                  </div>
-                  <h3 className="text-lg font-bold text-charcoal mb-2">{cat.name}</h3>
-                  <p className="text-sm text-gray-500">{cat.desc}</p>
-                </div>
-              );
-            })}
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+            {categories.map((cat) => (
+              <CategoryCard
+                key={cat.name}
+                item={cat}
+                onClick={() => navigate(`/batteries?category=${encodeURIComponent(cat.name)}`)}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -181,7 +317,9 @@ const Home = () => {
           <div className="flex items-center justify-between gap-4 mb-8 sm:mb-10">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-charcoal">Featured Products</h2>
-              <p className="text-xs sm:text-base text-gray-500">Our most trusted battery solutions</p>
+              <p className="text-xs sm:text-base text-gray-500">
+                Our most trusted battery & inverter solutions
+              </p>
             </div>
             <Link
               to="/batteries"
@@ -191,7 +329,7 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {loading ? (
               <div className="col-span-full py-16 flex justify-center">
                 <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
@@ -199,62 +337,85 @@ const Home = () => {
             ) : featured.length > 0 ? (
               featured.map((p) => {
                 const available = p.availableStock ?? p.currentStock ?? 0;
-                const status =
-                  available <= 0
-                    ? "out_of_stock"
-                    : available <= (p.minStockLevel || 5)
-                    ? "low_stock"
-                    : "in_stock";
+                const isOutOfStock = available <= 0;
 
-                const hasDiscount = Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
+                const hasDiscount =
+                  Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
                 const discountPercent = hasDiscount
                   ? Math.round(((Number(p.mrp) - Number(p.sellingPrice)) / Number(p.mrp)) * 100)
                   : 0;
 
+                const capabilityTags =
+                  Array.isArray(p.suitableFor) && p.suitableFor.length > 0
+                    ? p.suitableFor
+                    : p.ahCapacity >= 150
+                    ? ["1 BHK Home, 2 BHK Home, Shops"]
+                    : p.ahCapacity > 0
+                    ? [`${p.ahCapacity}Ah Capacity`, p.warranty || "Official Warranty"]
+                    : [p.warranty || "Genuine Product"];
+
                 return (
-                  <div key={p._id} className="card-premium group flex flex-col justify-between overflow-hidden">
+                  <div
+                    key={p._id}
+                    className="rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md transition-all group flex flex-col justify-between overflow-hidden"
+                  >
                     <div>
+                      {/* Top Discount Badge + Product Image */}
                       <div
                         onClick={() => navigate(`/products/${p._id}`)}
-                        className="h-36 sm:h-56 bg-gray-100 flex items-center justify-center relative overflow-hidden cursor-pointer"
+                        className="relative h-40 sm:h-56 bg-white border-b border-gray-100 flex items-center justify-center overflow-hidden cursor-pointer p-3 sm:p-5"
                       >
+                        {discountPercent > 0 && (
+                          <span className="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] sm:text-xs font-extrabold shadow-xs">
+                            {discountPercent}% OFF
+                          </span>
+                        )}
+
+                        {isOutOfStock && (
+                          <span className="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+                            Out of Stock
+                          </span>
+                        )}
+
                         {p.images && p.images.length > 0 ? (
                           <img
                             src={p.images[0]}
                             alt={p.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <Battery size={28} />
+                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <Battery size={36} />
                           </div>
                         )}
-                        {discountPercent > 0 && (
-                          <span className="absolute top-2 left-2 px-1.5 sm:px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] sm:text-xs font-bold shadow-xs">
-                            {discountPercent}% OFF
-                          </span>
-                        )}
-                        <span
-                          className={`absolute top-2 right-2 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-bold border ${statusColor(
-                            status
-                          )}`}
-                        >
-                          {statusLabel(status)}
-                        </span>
                       </div>
 
+                      {/* Brand, Title, Capability Pills & Price */}
                       <div className="p-3 sm:p-5 pb-2 sm:pb-3">
-                        <p className="text-[10px] sm:text-xs font-medium text-blue mb-0.5 sm:mb-1 uppercase tracking-wider truncate">
-                          {p.category}
+                        <p className="text-[11px] sm:text-xs font-extrabold text-blue-600 uppercase tracking-wider mb-1">
+                          {p.brand}
                         </p>
+
                         <Link to={`/products/${p._id}`}>
-                          <h3 className="text-sm sm:text-lg font-bold text-charcoal mb-0.5 sm:mb-1 group-hover:text-blue transition-colors line-clamp-2 leading-snug">
+                          <h3 className="text-sm sm:text-base font-bold text-charcoal mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
                             {p.name}
                           </h3>
                         </Link>
-                        <p className="text-xs sm:text-sm text-gray-500 mb-2 truncate">{p.brand}</p>
 
-                        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                        {/* Capability / Suitable For Pills */}
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium leading-tight">
+                            {capabilityTags.join(", ")}
+                          </span>
+                          {p.batteryType && (
+                            <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium">
+                              {p.batteryType}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Actual Price + Strikethrough MRP */}
+                        <div className="flex flex-wrap items-baseline gap-2">
                           <span className="text-base sm:text-xl font-extrabold text-charcoal">
                             {p.sellingPrice
                               ? `₹${new Intl.NumberFormat("en-IN").format(p.sellingPrice)}`
@@ -265,24 +426,19 @@ const Home = () => {
                               ₹{new Intl.NumberFormat("en-IN").format(p.mrp)}
                             </span>
                           )}
-                          {p.ahCapacity > 0 && (
-                            <span className="text-[10px] sm:text-xs text-gray-500">
-                              / {p.ahCapacity}Ah
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-1 flex flex-col sm:flex-row gap-1.5 sm:gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                    {/* Side-by-Side Action Buttons */}
+                    <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-2 flex flex-col sm:flex-row gap-1.5 sm:gap-2.5">
+                      <button
+                        type="button"
                         onClick={() => navigate(`/products/${p._id}`)}
-                        className="w-full sm:flex-1 text-xs py-1.5"
+                        className="w-full sm:flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors text-center"
                       >
-                        Details
-                      </Button>
+                        View Details
+                      </button>
                       <a
                         href={`https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
                           p.name
@@ -291,9 +447,9 @@ const Home = () => {
                         )}).%20Please%20confirm%20availability%20and%20final%20price.`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full sm:flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 sm:py-2 bg-green-600 text-white text-xs font-bold rounded-xl hover:bg-green-700 transition-colors"
+                        className="w-full sm:flex-1 py-2 px-3 bg-white hover:bg-green-50 text-green-700 border border-green-600 text-xs font-bold rounded-xl transition-colors text-center"
                       >
-                        WhatsApp
+                        Send Enquiry
                       </a>
                     </div>
                   </div>

@@ -10,9 +10,10 @@ import {
   Zap,
   Droplets,
   Image as ImageIcon,
+  Home as HomeIcon,
 } from "lucide-react";
 import { productService } from "../../services/productService.js";
-import { Card } from "../../components/common/Card.jsx";
+import { Button } from "../../components/common/Button.jsx";
 import { formatCurrency } from "../../utils/helpers.js";
 import toast from "react-hot-toast";
 
@@ -69,14 +70,22 @@ const ProductDetail = () => {
     );
   }
 
-  const images = Array.isArray(product.images) && product.images.length > 0
-    ? product.images
-    : product.image
-    ? [product.image]
-    : [];
+  const images =
+    Array.isArray(product.images) && product.images.length > 0
+      ? product.images
+      : product.image
+      ? [product.image]
+      : [];
 
   const availableStock = product.availableStock ?? product.currentStock ?? 0;
   const isOutOfStock = availableStock <= 0;
+
+  const actualPrice = Number(product.sellingPrice || product.price || 0);
+  const mrpPrice = Number(product.mrp || 0);
+  const hasDiscount = mrpPrice > actualPrice && actualPrice > 0;
+  const discountPercent = hasDiscount
+    ? Math.round(((mrpPrice - actualPrice) / mrpPrice) * 100)
+    : 0;
 
   const handlePrevImage = () => {
     setActiveImgIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -86,7 +95,11 @@ const ProductDetail = () => {
     setActiveImgIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   };
 
-  const waLink = `https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(product.name)}%20${encodeURIComponent(product.brand)}%20${encodeURIComponent(product.sku || "")}.%20Please%20confirm%20availability,%20compatibility%20and%20final%20price.`;
+  const waLink = `https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
+    product.name
+  )}%20${encodeURIComponent(product.brand)}%20${encodeURIComponent(
+    product.sku || ""
+  )}.%20Please%20confirm%20availability,%20compatibility%20and%20final%20price.`;
 
   return (
     <div className="min-h-screen bg-gray-50/60 pt-32 sm:pt-36 pb-20 px-4 sm:px-6 lg:px-8">
@@ -116,14 +129,18 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {images.length > 0 && (
-                <span className="absolute top-4 left-4 px-3 py-1 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold rounded-full border border-white/20">
-                  Angle {activeImgIndex + 1} of {images.length}
+              {discountPercent > 0 && (
+                <span className="absolute top-4 left-4 px-3 py-1 bg-amber-500 text-white text-xs font-extrabold rounded-full shadow-xs">
+                  {discountPercent}% OFF
                 </span>
               )}
 
               <span
-                className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-extrabold border ${isOutOfStock ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}
+                className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-extrabold border ${
+                  isOutOfStock
+                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                    : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                }`}
               >
                 {isOutOfStock ? "Out of Stock" : "In Stock"}
               </span>
@@ -146,7 +163,6 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Clickable Angle Thumbnails */}
             {images.length > 1 && (
               <div>
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -158,9 +174,17 @@ const ProductDetail = () => {
                     <button
                       key={idx}
                       onClick={() => setActiveImgIndex(idx)}
-                      className={`relative w-20 h-20 sm:w-22 sm:h-22 rounded-2xl border-2 bg-white overflow-hidden shrink-0 transition-all ${activeImgIndex === idx ? "border-blue-600 ring-2 ring-blue-600/20 shadow-xs scale-105" : "border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300"}`}
+                      className={`relative w-20 h-20 rounded-2xl border-2 bg-white overflow-hidden shrink-0 transition-all ${
+                        activeImgIndex === idx
+                          ? "border-blue-600 ring-2 ring-blue-600/20 shadow-xs scale-105"
+                          : "border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300"
+                      }`}
                     >
-                      <img src={imgSrc} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover p-1" />
+                      <img
+                        src={imgSrc}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover p-1"
+                      />
                     </button>
                   ))}
                 </div>
@@ -180,19 +204,54 @@ const ProductDetail = () => {
                     <span className="text-xs font-semibold text-gray-500"> • {product.brand}</span>
                   )}
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{product.name}</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                  {product.name}
+                </h1>
                 {product.sku && (
                   <p className="text-xs font-mono text-gray-400 mt-1">SKU: {product.sku}</p>
                 )}
+
+                {Array.isArray(product.suitableFor) && product.suitableFor.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                    <span className="text-xs font-semibold text-gray-500 flex items-center gap-1 mr-1">
+                      <HomeIcon size={13} className="text-blue-600" /> Suitable For:
+                    </span>
+                    {product.suitableFor.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-gray-100 shadow-xs flex items-baseline justify-between">
+              {/* Price + Strikethrough MRP Card */}
+              <div className="p-5 rounded-2xl bg-white border border-gray-100 shadow-xs flex items-baseline justify-between gap-4">
                 <div>
-                  <span className="text-3xl font-extrabold text-gray-900">{formatCurrency(product.sellingPrice || product.price)}</span>
-                  <span className="text-xs text-gray-500 block mt-0.5">Contact us for final price</span>
+                  <div className="flex flex-wrap items-baseline gap-2.5">
+                    <span className="text-3xl font-extrabold text-gray-900">
+                      {formatCurrency(actualPrice)}
+                    </span>
+                    {hasDiscount && (
+                      <>
+                        <span className="text-base text-gray-400 line-through">
+                          {formatCurrency(mrpPrice)}
+                        </span>
+                        <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-md">
+                          {discountPercent}% OFF
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-500 block mt-1">
+                    Contact us for final price & old battery exchange offer
+                  </span>
                 </div>
-                {product.ahCapacity && (
-                  <div className="text-right">
+                {product.ahCapacity > 0 && (
+                  <div className="text-right shrink-0">
                     <span className="text-lg font-bold text-blue-600">{product.ahCapacity} Ah</span>
                     <span className="text-xs text-gray-400 block">Battery Capacity</span>
                   </div>
@@ -211,7 +270,9 @@ const ProductDetail = () => {
                 <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3">
                   <Droplets size={18} className="text-blue-600 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-xs font-bold text-blue-950">6 Months Free Distilled Water</h4>
+                    <h4 className="text-xs font-bold text-blue-950">
+                      6 Months Free Distilled Water
+                    </h4>
                     <p className="text-[11px] text-blue-800">Contact us for details</p>
                   </div>
                 </div>
@@ -224,22 +285,30 @@ const ProductDetail = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                   <div className="p-2.5 rounded-lg bg-gray-50">
                     <span className="text-gray-400 block text-[10px]">Warranty</span>
-                    <span className="font-bold text-gray-800">{product.warranty || "36 Months"}</span>
+                    <span className="font-bold text-gray-800">
+                      {product.warranty || "36 Months"}
+                    </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-gray-50">
                     <span className="text-gray-400 block text-[10px]">Voltage</span>
-                    <span className="font-bold text-gray-800">{product.voltage ? `${product.voltage}V` : "12V"}</span>
+                    <span className="font-bold text-gray-800">
+                      {product.voltage ? `${product.voltage}V` : "12V"}
+                    </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-gray-50">
                     <span className="text-gray-400 block text-[10px]">Battery Type</span>
-                    <span className="font-bold text-gray-800">{product.batteryType || "Tubular"}</span>
+                    <span className="font-bold text-gray-800">
+                      {product.batteryType || "Tubular"}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {product.description && (
                 <div>
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Product Description</h3>
+                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Product Description
+                  </h3>
                   <p className="text-xs text-gray-600 leading-relaxed">{product.description}</p>
                 </div>
               )}
@@ -249,16 +318,22 @@ const ProductDetail = () => {
               <div className="flex gap-3">
                 <a
                   href={waLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-colors"
                 >
-                  <Phone size={18} className="text-white" /> WhatsApp Enquiry
+                  <Phone size={18} className="text-white" /> Send Enquiry
                 </a>
-                <a href="tel:+919789688756" className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-navy text-sm font-bold rounded-xl hover:bg-gray-100 transition-colors shrink-0">
+                <a
+                  href="tel:+919789688756"
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-navy border border-gray-200 text-sm font-bold rounded-xl hover:bg-gray-100 transition-colors shrink-0"
+                >
                   <Phone size={18} /> Call Us
                 </a>
               </div>
               <p className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1">
-                <ShieldCheck size={14} className="text-emerald-600" /> 100% Genuine Manufacturer Guarantee & Doorstep Support
+                <ShieldCheck size={14} className="text-emerald-600" /> 100% Genuine Manufacturer
+                Guarantee & Doorstep Support
               </p>
             </div>
           </div>
