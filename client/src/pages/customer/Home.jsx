@@ -175,23 +175,23 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-20 bg-white">
-        <div className="container-premium">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+      {/* Featured Products (Amazon-style 2 columns on mobile) */}
+      <section className="py-16 sm:py-20 bg-white">
+        <div className="container-premium px-3 sm:px-6">
+          <div className="flex items-center justify-between gap-4 mb-8 sm:mb-10">
             <div>
-              <h2 className="text-3xl font-bold text-charcoal">Featured Products</h2>
-              <p className="text-gray-500">Our most trusted battery solutions</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-charcoal">Featured Products</h2>
+              <p className="text-xs sm:text-base text-gray-500">Our most trusted battery solutions</p>
             </div>
             <Link
               to="/batteries"
-              className="text-sm font-medium text-blue hover:text-navy transition-colors flex items-center gap-1"
+              className="text-xs sm:text-sm font-semibold text-blue hover:text-navy transition-colors flex items-center gap-1 shrink-0"
             >
-              View All <ArrowRight size={16} />
+              View All <ArrowRight size={15} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {loading ? (
               <div className="col-span-full py-16 flex justify-center">
                 <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
@@ -206,10 +206,18 @@ const Home = () => {
                     ? "low_stock"
                     : "in_stock";
 
+                const hasDiscount = Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
+                const discountPercent = hasDiscount
+                  ? Math.round(((Number(p.mrp) - Number(p.sellingPrice)) / Number(p.mrp)) * 100)
+                  : 0;
+
                 return (
-                  <div key={p._id} className="card-premium group flex flex-col justify-between">
+                  <div key={p._id} className="card-premium group flex flex-col justify-between overflow-hidden">
                     <div>
-                      <div className="h-56 bg-gray-100 flex items-center justify-center relative overflow-hidden rounded-xl">
+                      <div
+                        onClick={() => navigate(`/products/${p._id}`)}
+                        className="h-36 sm:h-56 bg-gray-100 flex items-center justify-center relative overflow-hidden cursor-pointer"
+                      >
                         {p.images && p.images.length > 0 ? (
                           <img
                             src={p.images[0]}
@@ -218,11 +226,16 @@ const Home = () => {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <Battery size={32} />
+                            <Battery size={28} />
                           </div>
                         )}
+                        {discountPercent > 0 && (
+                          <span className="absolute top-2 left-2 px-1.5 sm:px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] sm:text-xs font-bold shadow-xs">
+                            {discountPercent}% OFF
+                          </span>
+                        )}
                         <span
-                          className={`absolute top-3 right-3 px-2.5 py-1 rounded text-xs font-bold border ${statusColor(
+                          className={`absolute top-2 right-2 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-bold border ${statusColor(
                             status
                           )}`}
                         >
@@ -230,33 +243,43 @@ const Home = () => {
                         </span>
                       </div>
 
-                      <div className="p-5 pb-3">
-                        <p className="text-xs font-medium text-blue mb-1 uppercase tracking-wider">
+                      <div className="p-3 sm:p-5 pb-2 sm:pb-3">
+                        <p className="text-[10px] sm:text-xs font-medium text-blue mb-0.5 sm:mb-1 uppercase tracking-wider truncate">
                           {p.category}
                         </p>
-                        <h3 className="text-lg font-bold text-charcoal mb-1 group-hover:text-blue transition-colors">
-                          {p.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 mb-3">{p.brand}</p>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-charcoal">
+                        <Link to={`/products/${p._id}`}>
+                          <h3 className="text-sm sm:text-lg font-bold text-charcoal mb-0.5 sm:mb-1 group-hover:text-blue transition-colors line-clamp-2 leading-snug">
+                            {p.name}
+                          </h3>
+                        </Link>
+                        <p className="text-xs sm:text-sm text-gray-500 mb-2 truncate">{p.brand}</p>
+
+                        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                          <span className="text-base sm:text-xl font-extrabold text-charcoal">
                             {p.sellingPrice
                               ? `₹${new Intl.NumberFormat("en-IN").format(p.sellingPrice)}`
                               : "₹--"}
                           </span>
+                          {hasDiscount && (
+                            <span className="text-xs sm:text-sm text-gray-400 line-through">
+                              ₹{new Intl.NumberFormat("en-IN").format(p.mrp)}
+                            </span>
+                          )}
                           {p.ahCapacity > 0 && (
-                            <span className="text-xs text-gray-500">/ {p.ahCapacity}Ah</span>
+                            <span className="text-[10px] sm:text-xs text-gray-500">
+                              / {p.ahCapacity}Ah
+                            </span>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="px-5 pb-5 pt-2 flex gap-2">
+                    <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-1 flex flex-col sm:flex-row gap-1.5 sm:gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => navigate(`/products/${p._id}`)}
-                        className="flex-1"
+                        className="w-full sm:flex-1 text-xs py-1.5"
                       >
                         Details
                       </Button>
@@ -268,7 +291,7 @@ const Home = () => {
                         )}).%20Please%20confirm%20availability%20and%20final%20price.`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white text-xs font-bold rounded-xl hover:bg-green-700 transition-colors"
+                        className="w-full sm:flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 sm:py-2 bg-green-600 text-white text-xs font-bold rounded-xl hover:bg-green-700 transition-colors"
                       >
                         WhatsApp
                       </a>
@@ -382,7 +405,7 @@ const Home = () => {
                 href="https://maps.app.goo.gl/Eo7VaAAysAE992YH8?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-grey text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors"
               >
                 <MapPin size={15} /> Open Google Maps
               </a>

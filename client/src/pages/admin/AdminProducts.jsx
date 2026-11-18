@@ -72,6 +72,7 @@ const AdminProducts = () => {
     voltage: "",
     batteryType: "",
     warranty: "",
+    mrp: "",
     purchasePrice: "",
     sellingPrice: "",
     gstRate: "18",
@@ -126,6 +127,7 @@ const AdminProducts = () => {
       voltage: "",
       batteryType: "",
       warranty: "",
+      mrp: "",
       purchasePrice: "",
       sellingPrice: "",
       gstRate: "18",
@@ -156,6 +158,7 @@ const AdminProducts = () => {
       voltage: p.voltage != null ? String(p.voltage) : "",
       batteryType: p.batteryType || "",
       warranty: p.warranty || "",
+      mrp: p.mrp != null ? String(p.mrp) : "",
       purchasePrice: p.purchasePrice != null ? String(p.purchasePrice) : "",
       sellingPrice: p.sellingPrice != null ? String(p.sellingPrice) : "",
       gstRate: p.gstRate != null ? String(p.gstRate) : "18",
@@ -176,7 +179,6 @@ const AdminProducts = () => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Image Upload Handlers
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -195,7 +197,7 @@ const AdminProducts = () => {
       };
       reader.readAsDataURL(file);
     });
-    e.target.value = ""; // Reset input
+    e.target.value = "";
   };
 
   const handleAddImageUrl = () => {
@@ -235,6 +237,7 @@ const AdminProducts = () => {
         voltage: Number(form.voltage) || 0,
         batteryType: form.batteryType.trim(),
         warranty: form.warranty.trim(),
+        mrp: Number(form.mrp) || 0,
         purchasePrice: Number(form.purchasePrice) || 0,
         sellingPrice: Number(form.sellingPrice) || 0,
         gstRate: Number(form.gstRate) || 18,
@@ -366,7 +369,7 @@ const AdminProducts = () => {
                 <th className="py-3.5 px-4">Product Details</th>
                 <th className="py-3.5 px-4">SKU Code</th>
                 <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4 text-right">Selling Price</th>
+                <th className="py-3.5 px-4 text-right">Our Price / MRP</th>
                 <th className="py-3.5 px-4 text-center">Stock Status</th>
                 <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
@@ -408,7 +411,12 @@ const AdminProducts = () => {
                         {p.category}
                       </td>
                       <td className="py-4 px-4 text-right font-bold text-gray-900">
-                        {formatCurrency(p.sellingPrice || 0)}
+                        <div>{formatCurrency(p.sellingPrice || 0)}</div>
+                        {Number(p.mrp) > Number(p.sellingPrice) && (
+                          <div className="text-xs font-normal text-gray-400 line-through">
+                            {formatCurrency(p.mrp)}
+                          </div>
+                        )}
                       </td>
                       <td className="py-4 px-4 text-center">
                         <div className="inline-flex flex-col items-center gap-0.5">
@@ -486,7 +494,6 @@ const AdminProducts = () => {
                   </span>
                 </label>
 
-                {/* File Upload Box */}
                 <div className="flex flex-col sm:flex-row items-center gap-3">
                   <label className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-blue-300 rounded-xl bg-white hover:bg-blue-50/50 cursor-pointer transition-colors text-blue-600 font-semibold text-xs">
                     <Upload size={16} />
@@ -501,7 +508,6 @@ const AdminProducts = () => {
                   </label>
                 </div>
 
-                {/* URL Input Fallback */}
                 <div className="flex gap-2">
                   <input
                     type="url"
@@ -521,7 +527,6 @@ const AdminProducts = () => {
                   </Button>
                 </div>
 
-                {/* Image Thumbnails List */}
                 {form.images.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
                     {form.images.map((imgSrc, idx) => (
@@ -614,7 +619,14 @@ const AdminProducts = () => {
               </div>
 
               {/* Pricing & Stock */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <Input
+                  label="MRP (₹)"
+                  type="number"
+                  value={form.mrp}
+                  onChange={(e) => handleChange("mrp", e.target.value)}
+                  placeholder="13500"
+                />
                 <Input
                   label="Purchase Price (₹)"
                   type="number"
@@ -623,7 +635,7 @@ const AdminProducts = () => {
                   placeholder="8500"
                 />
                 <Input
-                  label="Selling Price (₹) *"
+                  label="Our Price (₹) *"
                   type="number"
                   value={form.sellingPrice}
                   onChange={(e) => handleChange("sellingPrice", e.target.value)}
@@ -637,7 +649,7 @@ const AdminProducts = () => {
                   placeholder="10"
                 />
                 <Input
-                  label="Min Stock Threshold"
+                  label="Min Stock"
                   type="number"
                   value={form.minStockLevel}
                   onChange={(e) => handleChange("minStockLevel", e.target.value)}
