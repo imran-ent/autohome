@@ -273,156 +273,84 @@ const ProductDetail = () => {
           </div>
 
           {/* Product Details & Contact */}
-          <div className="lg:col-span-6 flex flex-col justify-between">
-            <div className="space-y-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-0.5 bg-blue-50 text-blue text-xs font-bold uppercase tracking-wider rounded-md border border-blue-100">
-                    {product.category}
-                  </span>
-                  {product.brand && (
-                    <span className="text-xs font-semibold text-gray-500"> • {product.brand}</span>
-                  )}
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                  {product.name}
-                </h1>
-                {product.sku && (
-                  <p className="text-xs font-mono text-gray-400 mt-1">SKU: {product.sku}</p>
-                )}
-
-                {Array.isArray(product.suitableFor) && product.suitableFor.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                    <span className="text-xs font-semibold text-gray-500 flex items-center gap-1 mr-1">
-                      <HomeIcon size={13} className="text-blue" /> Suitable For:
-                    </span>
-                    {product.suitableFor.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+          <div className="lg:col-span-6 space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2.5 py-0.5 bg-blue-50 text-blue text-xs font-bold uppercase tracking-wider rounded-md border border-blue-100">
+                  {product.category}
+                </span>
+                {product.brand && (
+                  <span className="text-xs font-semibold text-gray-500"> • {product.brand}</span>
                 )}
               </div>
-
-              {/* Price + Strikethrough MRP Card */}
-              <div className="p-5 rounded-2xl bg-white border border-gray-100 shadow-xs flex items-baseline justify-between gap-4">
-                <div>
-                  <div className="flex flex-wrap items-baseline gap-2.5">
-                    <span className="text-3xl font-extrabold text-gray-900">
-                      {formatCurrency(actualPrice)}
-                    </span>
-                    {hasDiscount && (
-                      <>
-                        <span className="text-base text-gray-400 line-through">
-                          {formatCurrency(mrpPrice)}
-                        </span>
-                        <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-md">
-                          {discountPercent}% OFF
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-500 block mt-1">
-                    Contact us for final price &amp; old battery exchange offer
-                  </span>
-                </div>
-                {product.ahCapacity > 0 && (
-                  <div className="text-right shrink-0">
-                    <span className="text-lg font-bold text-blue">{product.ahCapacity} Ah</span>
-                    <span className="text-xs text-gray-400 block">Battery Capacity</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
-                  <Zap size={18} className="text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-bold text-amber-950">Free Installation</h4>
-                    <p className="text-[11px] text-amber-800">Contact us for installation details</p>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3">
-                  <Droplets size={18} className="text-blue shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-bold text-blue-950">
-                      6 Months Free Distilled Water
-                    </h4>
-                    <p className="text-[11px] text-blue-800">Contact us for details</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-3">
-                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Battery size={15} className="text-blue" /> Technical Details
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-2.5 rounded-lg bg-gray-50">
-                    <span className="text-gray-400 block text-[10px]">Warranty</span>
-                    <span className="font-bold text-gray-800">
-                      {product.warranty || "36 Months"}
-                    </span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-gray-50">
-                    <span className="text-gray-400 block text-[10px]">Voltage</span>
-                    <span className="font-bold text-gray-800">
-                      {product.voltage ? `${product.voltage}V` : "12V"}
-                    </span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-gray-50">
-                    <span className="text-gray-400 block text-[10px]">Battery Type</span>
-                    <span className="font-bold text-gray-800">
-                      {product.batteryType || "Tubular"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {Array.isArray(product.pros) && product.pros.length > 0 && (
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-2.5">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Key Highlights
-                  </h3>
-                  <ul className="space-y-1.5">
-                    {product.pros.map((pro, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
-                        <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                        <span>{pro}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                {product.name}
+              </h1>
+              {product.sku && (
+                <p className="text-xs font-mono text-gray-400 mt-1">SKU: {product.sku}</p>
               )}
 
-              {product.description && (
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-3">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Product Description &amp; Features
-                  </h3>
-                  <FormattedDescription text={product.description} />
+              {Array.isArray(product.suitableFor) && product.suitableFor.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                  <span className="text-xs font-semibold text-gray-500 flex items-center gap-1 mr-1">
+                    <HomeIcon size={13} className="text-blue" /> Suitable For:
+                  </span>
+                  {product.suitableFor.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               )}
             </div>
 
-            <div className="pt-6 border-t border-gray-200 mt-6 space-y-3">
+            {/* Price + Strikethrough MRP Card */}
+            <div className="p-5 rounded-2xl bg-white border border-gray-100 shadow-xs flex items-baseline justify-between gap-4">
+              <div>
+                <div className="flex flex-wrap items-baseline gap-2.5">
+                  <span className="text-3xl font-extrabold text-gray-900">
+                    {formatCurrency(actualPrice)}
+                  </span>
+                  {hasDiscount && (
+                    <>
+                      <span className="text-base text-gray-400 line-through">
+                        {formatCurrency(mrpPrice)}
+                      </span>
+                      <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-md">
+                        {discountPercent}% OFF
+                      </span>
+                    </>
+                  )}
+                </div>
+                <span className="text-xs text-gray-500 block mt-1">
+                  Contact us for final price &amp; old battery exchange offer
+                </span>
+              </div>
+              {product.ahCapacity > 0 && (
+                <div className="text-right shrink-0">
+                  <span className="text-lg font-bold text-blue">{product.ahCapacity} Ah</span>
+                  <span className="text-xs text-gray-400 block">Battery Capacity</span>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons (Placed Above Description & Specs) */}
+            <div className="space-y-2.5">
               <div className="flex gap-3">
                 <a
                   href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-colors shadow-xs"
                 >
                   <Phone size={18} className="text-white" /> Send Enquiry
                 </a>
                 <a
                   href="tel:+919789688756"
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-navy border border-gray-200 text-sm font-bold rounded-xl hover:bg-gray-100 transition-colors shrink-0"
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-navy border border-gray-200 text-sm font-bold rounded-xl hover:bg-gray-100 transition-colors shrink-0 shadow-xs"
                 >
                   <Phone size={18} /> Call Us
                 </a>
@@ -432,6 +360,77 @@ const ProductDetail = () => {
                 Guarantee &amp; Doorstep Support
               </p>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
+                <Zap size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-bold text-amber-950">Free Installation</h4>
+                  <p className="text-[11px] text-amber-800">Contact us for installation details</p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3">
+                <Droplets size={18} className="text-blue shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-bold text-blue-950">
+                    6 Months Free Distilled Water
+                  </h4>
+                  <p className="text-[11px] text-blue-800">Contact us for details</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-3">
+              <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                <Battery size={15} className="text-blue" /> Technical Details
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-2.5 rounded-lg bg-gray-50">
+                  <span className="text-gray-400 block text-[10px]">Warranty</span>
+                  <span className="font-bold text-gray-800">
+                    {product.warranty || "36 Months"}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-gray-50">
+                  <span className="text-gray-400 block text-[10px]">Voltage</span>
+                  <span className="font-bold text-gray-800">
+                    {product.voltage ? `${product.voltage}V` : "12V"}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-gray-50">
+                  <span className="text-gray-400 block text-[10px]">Battery Type</span>
+                  <span className="font-bold text-gray-800">
+                    {product.batteryType || "Tubular"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {Array.isArray(product.pros) && product.pros.length > 0 && (
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-2.5">
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Key Highlights
+                </h3>
+                <ul className="space-y-1.5">
+                  {product.pros.map((pro, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                      <span>{pro}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {product.description && (
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-3">
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Product Description &amp; Features
+                </h3>
+                <FormattedDescription text={product.description} />
+              </div>
+            )}
           </div>
         </div>
       </div>

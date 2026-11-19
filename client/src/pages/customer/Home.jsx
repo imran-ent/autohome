@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Battery,
@@ -10,6 +10,7 @@ import {
   Droplets,
   Zap,
   MapPin,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/Button.jsx";
@@ -21,6 +22,14 @@ const FEATURED_CATEGORIES = [
   "Inverter Batteries",
   "Lithium Batteries",
   "Combo Home Inverter & Batteries",
+];
+
+const QUICK_SEARCH_TAGS = [
+  "150Ah Inverter",
+  "Lithium Battery",
+  "Exide",
+  "Car Battery",
+  "Two Wheeler",
 ];
 
 const CategoryIllustration = ({ type }) => {
@@ -295,6 +304,14 @@ const Home = () => {
   });
   const [activeTab, setActiveTab] = useState("ALL");
   const [loading, setLoading] = useState(true);
+
+  // Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchContainerRef = useRef(null);
+
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -305,6 +322,67 @@ const Home = () => {
       return;
     }
     navigate(path);
+  };
+
+  // Close instant search dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Debounced live product search
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (trimmed.length < 2) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await productService.getAll({
+          search: trimmed,
+          isActive: "true",
+          limit: 5,
+        });
+        const items = res.data?.data?.products || res.data?.data || [];
+        setSearchResults(Array.isArray(items) ? items : []);
+        setShowDropdown(true);
+      } catch (err) {
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = searchQuery.trim();
+    setShowDropdown(false);
+    if (!trimmed) {
+      navigate("/batteries");
+      return;
+    }
+    navigate(`/batteries?search=${encodeURIComponent(trimmed)}`);
+  };
+
+  const handleQuickTagClick = (tag) => {
+    setSearchQuery(tag);
+    setShowDropdown(false);
+    navigate(`/batteries?search=${encodeURIComponent(tag)}`);
   };
 
   const categories = [
@@ -436,9 +514,9 @@ const Home = () => {
   return (
     <div className="animate-fade-in">
       {/* Hero Section */}
-      <section className="relative bg-navy overflow-hidden">
-        <div className="absolute inset-0 bg-[url('../src/resource/homepageimg.png')] bg-cover bg-center opacity-100" />
-        <div className="absolute inset-0 bg-gradient-to-r from-navy/90 to-navy/60" />
+      <section className="relative bg-navy">
+        <div className="absolute inset-0 bg-[url('../src/resource/homepageimg.png')] bg-cover bg-center opacity-100 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/90 to-navy/60 pointer-events-none" />
         <div className="container-premium relative z-10 pt-24 pb-24 px-4">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 text-gold text-xs font-semibold uppercase tracking-wider border border-gold/40 mb-6">
@@ -449,9 +527,156 @@ const Home = () => {
               Premium Power for <br />
               <span className="text-blue">Every Journey</span>
             </h1>
-            <p className="text-gray-200 text-lg md:text-xl mb-10 max-w-2xl leading-relaxed">
+            <p className="text-gray-200 text-lg md:text-xl mb-8 max-w-2xl leading-relaxed">
               Discover the right battery for your home, vehicle or business with AI-powered recommendations, genuine brands and expert service.
             </p>
+
+            {/* Instant Store Search Bar */}
+            <div ref={searchContainerRef} className="relative max-w-2xl mb-8">
+              <form
+                onSubmit={handleSearchSubmit}
+                className="flex items-center bg-white rounded-2xl p-1.5 shadow-xl border border-white/20 focus-within:ring-2 focus-within:ring-blue"
+              >
+                <div className="pl-3 pr-2 text-gray-400 shrink-0">
+                  <Search size={20} />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onFocus={() => {
+                    if (searchQuery.trim().length >= 2) setShowDropdown(true);
+                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by brand (Exide, Amaron), model, 150Ah, Lithium, Car..."
+                  className="w-full py-2.5 px-1 text-sm sm:text-base text-gray-900 placeholder-gray-400 bg-transparent focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchResults([]);
+                      setShowDropdown(false);
+                    }}
+                    aria-label="Clear search"
+                    className="p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
+                  className="px-5 py-2.5 sm:px-6 sm:py-3 bg-navy hover:opacity-90 text-white text-xs sm:text-sm font-bold rounded-xl transition-opacity shrink-0 cursor-pointer"
+                >
+                  Search
+                </button>
+              </form>
+
+              {/* Quick Search Chips */}
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <span className="text-xs text-gray-300 font-medium">Popular:</span>
+                {QUICK_SEARCH_TAGS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleQuickTagClick(tag)}
+                    className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium border border-white/15 transition-colors cursor-pointer"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              {/* Instant Search Results Dropdown */}
+              {showDropdown && searchQuery.trim().length >= 2 && (
+                <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+                  {searching ? (
+                    <div className="p-5 text-center text-xs text-gray-500 flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-navy border-t-transparent rounded-full animate-spin" />
+                      Searching store inventory...
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div>
+                      <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                        {searchResults.map((item) => (
+                          <div
+                            key={item._id}
+                            onClick={() => {
+                              setShowDropdown(false);
+                              navigate(`/products/${item._id}`);
+                            }}
+                            className="flex items-center justify-between gap-3 p-3.5 hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 p-1">
+                                {item.images?.[0] ? (
+                                  <img
+                                    src={item.images[0]}
+                                    alt={item.name}
+                                    className="w-full h-full object-contain"
+                                  />
+                                ) : (
+                                  <Battery size={20} className="text-gray-400" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[11px] font-bold text-blue uppercase">
+                                  {item.brand} • {item.category}
+                                </p>
+                                <p className="text-sm font-bold text-charcoal truncate">
+                                  {item.name}
+                                </p>
+                                {item.ahCapacity > 0 && (
+                                  <p className="text-[11px] text-gray-500">
+                                    {item.ahCapacity} Ah • {item.warranty || "Official Warranty"}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-sm font-extrabold text-charcoal block">
+                                {item.sellingPrice
+                                  ? `₹${new Intl.NumberFormat("en-IN").format(item.sellingPrice)}`
+                                  : "Enquire"}
+                              </span>
+                              <span className="text-[10px] font-semibold text-blue">
+                                View →
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSearchSubmit}
+                        className="w-full py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-xs font-bold text-navy border-t border-gray-200 flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        View all matching batteries for "{searchQuery.trim()}"{" "}
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-5 text-center">
+                      <p className="text-xs text-gray-500 mb-2">
+                        No exact match found for "{searchQuery.trim()}"
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDropdown(false);
+                          navigate("/batteries");
+                        }}
+                        className="text-xs font-bold text-blue hover:underline cursor-pointer"
+                      >
+                        Browse full battery catalog →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 variant="primary"
@@ -459,7 +684,7 @@ const Home = () => {
                 onClick={() => handleProtectedNav("/battery-finder", "AI Battery Finder")}
                 className="w-full sm:w-auto justify-center"
               >
-                <Search size={20} /> Find My Battery
+                <Zap size={20} /> AI Battery Finder
               </Button>
               <Button
                 variant="outline"
