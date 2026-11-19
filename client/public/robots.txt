@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /register
 
-Sitemap: https://autohomebatteries.pages.dev/sitemap.xml
+Sitemap: https://autohomebatteries.in/sitemap.xml
