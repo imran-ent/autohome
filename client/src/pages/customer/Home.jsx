@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Battery,
@@ -17,6 +17,7 @@ import { Button } from "../../components/common/Button.jsx";
 import { Card } from "../../components/common/Card.jsx";
 import { productService } from "../../services/productService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { smartSearchProducts } from "../../utils/smartSearch.js";
 
 const FEATURED_CATEGORIES = [
   "Inverter Batteries",
@@ -25,6 +26,7 @@ const FEATURED_CATEGORIES = [
 ];
 
 const QUICK_SEARCH_TAGS = [
+  "Battery for 2 BHK",
   "150Ah Inverter",
   "Lithium Battery",
   "Exide",
@@ -202,7 +204,6 @@ const FeaturedProductCard = ({ p, navigate }) => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md transition-all group flex flex-col justify-between overflow-hidden">
       <div>
-        {/* Top Discount Badge + Product Image */}
         <div
           onClick={() => navigate(`/products/${p._id}`)}
           className="relative h-40 sm:h-56 bg-white border-b border-gray-100 flex items-center justify-center overflow-hidden cursor-pointer p-3 sm:p-5"
@@ -233,7 +234,6 @@ const FeaturedProductCard = ({ p, navigate }) => {
           )}
         </div>
 
-        {/* Brand, Title, Capability Pills & Price */}
         <div className="p-3 sm:p-5 pb-2 sm:pb-3">
           <p className="text-[11px] sm:text-xs font-extrabold text-blue uppercase tracking-wider mb-1">
             {p.brand}
@@ -245,7 +245,6 @@ const FeaturedProductCard = ({ p, navigate }) => {
             </h3>
           </Link>
 
-          {/* Capability / Suitable For Pills */}
           <div className="flex flex-wrap gap-1 mb-3">
             <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] font-medium leading-tight">
               {capabilityTags.join(", ")}
@@ -257,7 +256,6 @@ const FeaturedProductCard = ({ p, navigate }) => {
             )}
           </div>
 
-          {/* Actual Price + Strikethrough MRP */}
           <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-base sm:text-xl font-extrabold text-charcoal">
               {p.sellingPrice
@@ -273,7 +271,6 @@ const FeaturedProductCard = ({ p, navigate }) => {
         </div>
       </div>
 
-      {/* Side-by-Side Action Buttons */}
       <div className="px-3 pb-3 sm:px-5 sm:pb-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <button
           type="button"
@@ -297,18 +294,12 @@ const FeaturedProductCard = ({ p, navigate }) => {
 };
 
 const Home = () => {
-  const [featuredByCat, setFeaturedByCat] = useState({
-    "Inverter Batteries": [],
-    "Lithium Batteries": [],
-    "Combo Home Inverter & Batteries": [],
-  });
+  const [allProducts, setAllProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("ALL");
   const [loading, setLoading] = useState(true);
 
-  // Search states
+  // Instant smart search states
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchContainerRef = useRef(null);
 
@@ -338,35 +329,34 @@ const Home = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounced live product search
+  // Load full active catalog once for instant smart search + featured showcase
   useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed.length < 2) {
-      setSearchResults([]);
-      setSearching(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setSearching(true);
+    const loadCatalog = async () => {
+      setLoading(true);
       try {
         const res = await productService.getAll({
-          search: trimmed,
           isActive: "true",
-          limit: 5,
+          limit: 250,
         });
         const items = res.data?.data?.products || res.data?.data || [];
-        setSearchResults(Array.isArray(items) ? items : []);
-        setShowDropdown(true);
-      } catch (err) {
-        setSearchResults([]);
+        setAllProducts(Array.isArray(items) ? items : []);
+      } catch (e) {
+        setAllProducts([]);
       } finally {
-        setSearching(false);
+        setLoading(false);
       }
-    }, 250);
+    };
+    loadCatalog();
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  // Real-time intent-aware search results
+  const smartMatches = useMemo(() => {
+    const trimmed = searchQuery.trim();
+    if (trimmed.length < 2) return [];
+    return smartSearchProducts(allProducts, trimmed);
+  }, [allProducts, searchQuery]);
+
+  const dropdownResults = smartMatches.slice(0, 6);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -381,8 +371,7 @@ const Home = () => {
 
   const handleQuickTagClick = (tag) => {
     setSearchQuery(tag);
-    setShowDropdown(false);
-    navigate(`/batteries?search=${encodeURIComponent(tag)}`);
+    setShowDropdown(true);
   };
 
   const categories = [
@@ -446,58 +435,17 @@ const Home = () => {
     },
   ];
 
-  useEffect(() => {
-    const loadFeatured = async () => {
-      setLoading(true);
-      try {
-        const [invRes, lithRes, comboRes] = await Promise.all([
-          productService.getAll({
-            category: "Inverter Batteries",
-            isActive: "true",
-            limit: 6,
-          }),
-          productService.getAll({
-            category: "Lithium Batteries",
-            isActive: "true",
-            limit: 6,
-          }),
-          productService.getAll({
-            category: "Combo Home Inverter & Batteries",
-            isActive: "true",
-            limit: 6,
-          }),
-        ]);
-
-        setFeaturedByCat({
-          "Inverter Batteries":
-            invRes.data?.data?.products || invRes.data?.data || [],
-          "Lithium Batteries":
-            lithRes.data?.data?.products || lithRes.data?.data || [],
-          "Combo Home Inverter & Batteries":
-            comboRes.data?.data?.products || comboRes.data?.data || [],
-        });
-      } catch (e) {
-        setFeaturedByCat({
-          "Inverter Batteries": [],
-          "Lithium Batteries": [],
-          "Combo Home Inverter & Batteries": [],
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadFeatured();
-  }, []);
-
-  // Build balanced list from Inverter Batteries, Lithium Batteries & Combos
-  const getDisplayedFeatured = () => {
+  // Build balanced featured list from Inverter Batteries, Lithium Batteries & Combos
+  const displayedFeatured = useMemo(() => {
     if (activeTab !== "ALL") {
-      return (featuredByCat[activeTab] || []).slice(0, 6);
+      return allProducts.filter((p) => p.category === activeTab).slice(0, 6);
     }
 
-    const inv = featuredByCat["Inverter Batteries"] || [];
-    const lith = featuredByCat["Lithium Batteries"] || [];
-    const combo = featuredByCat["Combo Home Inverter & Batteries"] || [];
+    const inv = allProducts.filter((p) => p.category === "Inverter Batteries");
+    const lith = allProducts.filter((p) => p.category === "Lithium Batteries");
+    const combo = allProducts.filter(
+      (p) => p.category === "Combo Home Inverter & Batteries"
+    );
 
     const combined = [];
     const maxLen = Math.max(inv.length, lith.length, combo.length);
@@ -506,10 +454,8 @@ const Home = () => {
       if (lith[i] && combined.length < 6) combined.push(lith[i]);
       if (combo[i] && combined.length < 6) combined.push(combo[i]);
     }
-    return combined;
-  };
-
-  const displayedFeatured = getDisplayedFeatured();
+    return combined.length > 0 ? combined : allProducts.slice(0, 6);
+  }, [allProducts, activeTab]);
 
   return (
     <div className="animate-fade-in">
@@ -531,7 +477,7 @@ const Home = () => {
               Discover the right battery for your home, vehicle or business with AI-powered recommendations, genuine brands and expert service.
             </p>
 
-            {/* Instant Store Search Bar */}
+            {/* Instant Smart Store Search Bar */}
             <div ref={searchContainerRef} className="relative max-w-2xl mb-8">
               <form
                 onSubmit={handleSearchSubmit}
@@ -546,8 +492,11 @@ const Home = () => {
                   onFocus={() => {
                     if (searchQuery.trim().length >= 2) setShowDropdown(true);
                   }}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by brand (Exide, Amaron), model, 150Ah, Lithium, Car..."
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.trim().length >= 2) setShowDropdown(true);
+                  }}
+                  placeholder="Try 'Battery for 2 BHK', 'Exide 150Ah', 'Lithium', 'Car'..."
                   className="w-full py-2.5 px-1 text-sm sm:text-base text-gray-900 placeholder-gray-400 bg-transparent focus:outline-none"
                 />
                 {searchQuery && (
@@ -555,7 +504,6 @@ const Home = () => {
                     type="button"
                     onClick={() => {
                       setSearchQuery("");
-                      setSearchResults([]);
                       setShowDropdown(false);
                     }}
                     aria-label="Clear search"
@@ -588,18 +536,27 @@ const Home = () => {
                 ))}
               </div>
 
-              {/* Instant Search Results Dropdown */}
+              {/* Instant Smart Search Results Dropdown */}
               {showDropdown && searchQuery.trim().length >= 2 && (
                 <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
-                  {searching ? (
+                  {loading ? (
                     <div className="p-5 text-center text-xs text-gray-500 flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-navy border-t-transparent rounded-full animate-spin" />
-                      Searching store inventory...
+                      Loading store inventory...
                     </div>
-                  ) : searchResults.length > 0 ? (
+                  ) : dropdownResults.length > 0 ? (
                     <div>
+                      <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-gray-500">
+                          {smartMatches.length} matching{" "}
+                          {smartMatches.length === 1 ? "product" : "products"} found
+                        </span>
+                        <span className="text-[10px] font-semibold text-blue">
+                          Click to view specs
+                        </span>
+                      </div>
                       <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
-                        {searchResults.map((item) => (
+                        {dropdownResults.map((item) => (
                           <div
                             key={item._id}
                             onClick={() => {
@@ -627,11 +584,15 @@ const Home = () => {
                                 <p className="text-sm font-bold text-charcoal truncate">
                                   {item.name}
                                 </p>
-                                {item.ahCapacity > 0 && (
-                                  <p className="text-[11px] text-gray-500">
-                                    {item.ahCapacity} Ah • {item.warranty || "Official Warranty"}
-                                  </p>
-                                )}
+                                <p className="text-[11px] text-gray-500 truncate">
+                                  {item.ahCapacity > 0 ? `${item.ahCapacity} Ah` : ""}
+                                  {item.ahCapacity > 0 && item.warranty ? " • " : ""}
+                                  {item.warranty || ""}
+                                  {Array.isArray(item.suitableFor) &&
+                                  item.suitableFor.length > 0
+                                    ? ` • ${item.suitableFor.join(", ")}`
+                                    : ""}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right shrink-0">
@@ -652,7 +613,7 @@ const Home = () => {
                         onClick={handleSearchSubmit}
                         className="w-full py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-xs font-bold text-navy border-t border-gray-200 flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        View all matching batteries for "{searchQuery.trim()}"{" "}
+                        View all {smartMatches.length} matching batteries{" "}
                         <ArrowRight size={14} />
                       </button>
                     </div>
@@ -722,7 +683,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products (Curated from Inverter Batteries, Lithium Batteries & Combos) */}
+      {/* Featured Products */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="container-premium px-3 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
