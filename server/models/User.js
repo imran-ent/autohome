@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema(
       state: String,
       pincode: String,
     },
+    lastLoginAt: {
+      type: Date,
+      default: Date.now,
+    },
     resetOtpHash: String,
     resetOtpExpire: Date,
   },

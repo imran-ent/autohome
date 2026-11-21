@@ -49,6 +49,7 @@ router.post("/google", async (req, res, next) => {
         googleId,
         avatar: picture || "",
         role: "customer",
+        lastLoginAt: new Date(),
       });
     } else {
       if (!user.isActive) {
@@ -63,6 +64,7 @@ router.post("/google", async (req, res, next) => {
       if (!user.avatar && picture) {
         user.avatar = picture;
       }
+      user.lastLoginAt = new Date();
       await user.save();
     }
 
@@ -181,6 +183,64 @@ router.post("/reset-password", async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Password updated successfully! You can now sign in.",
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Admin: Get all logged-in / registered customers (Name, Mobile, Email)
+router.get("/customers", protect, async (req, res, next) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admin privileges required.",
+      });
+    }
+
+    const customers = await User.find({ role: "customer" })
+      .select("name email mobile googleId avatar isActive lastLoginAt createdAt")
+      .sort({ lastLoginAt: -1, createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      count: customers.length,
+      data: customers,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Admin: Update or add a customer's phone number
+router.patch("/customers/:id/mobile", protect, async (req, res, next) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admin privileges required.",
+      });
+    }
+
+    const { mobile } = req.body;
+    const customer = await User.findByIdAndUpdate(
+      req.params.id,
+      { mobile: String(mobile || "").trim() },
+      { new: true }
+    ).select("name email mobile googleId avatar isActive lastLoginAt createdAt");
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: customer,
     });
   } catch (error) {
     next(error);

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import {Headset } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Battery,
@@ -8,22 +7,25 @@ import {
   Clock,
   ChevronRight,
   RefreshCw,
-  PlusCircle,
   Wrench,
-  ShoppingBag,
+  Headset,
 } from "lucide-react";
 import { dashboardService } from "../../services/dashboardService.js";
 import toast from "react-hot-toast";
 import { Card } from "../../components/common/Card.jsx";
-import { formatCurrency } from "../../utils/helpers.js";
+import CustomerUsersSection from "../../components/admin/CustomerUsersSection.jsx";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     try {
       const statsRes = await dashboardService.getStats();
       setStats(statsRes.data.data);
@@ -31,6 +33,7 @@ const AdminDashboard = () => {
       toast.error(error.response?.data?.message || "Failed to load dashboard data");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -202,7 +205,7 @@ const AdminDashboard = () => {
               Direct access to primary administrative controls.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {quickActions.map((action) => {
                 const Icon = action.icon;
                 return (
@@ -236,6 +239,11 @@ const AdminDashboard = () => {
             </div>
           </div>
         </Card>
+
+        {/* Logged-In Customers Section (Name, Phone Number, Email ID) */}
+        <div className="lg:col-span-12">
+          <CustomerUsersSection />
+        </div>
       </div>
     </div>
   );
