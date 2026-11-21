@@ -134,6 +134,77 @@ const ProductDetail = () => {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
+  // Inject Google Product Rich Snippet (JSON-LD) & dynamic SEO tags
+  useEffect(() => {
+    if (!product) return;
+
+    const productImages =
+      Array.isArray(product.images) && product.images.length > 0
+        ? product.images
+        : product.image
+        ? [product.image]
+        : [];
+    const priceVal = Number(product.sellingPrice || product.price || 0);
+    const stockVal = product.availableStock ?? product.currentStock ?? 0;
+    const seoDesc =
+      product.description ||
+      `Buy ${product.name} by ${product.brand}${
+        product.ahCapacity > 0 ? ` (${product.ahCapacity}Ah)` : ""
+      } at AutoHome Batteries, Pernambut. Genuine warranty & free installation.`;
+
+    document.title = `${product.name} (${product.brand}) | AutoHome Batteries Pernambut`;
+
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement("meta");
+      metaDesc.setAttribute("name", "description");
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute("content", seoDesc.slice(0, 160));
+
+    const schema = {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      name: product.name,
+      image: productImages,
+      description: seoDesc,
+      sku: product.sku || product._id,
+      brand: {
+        "@type": "Brand",
+        name: product.brand || "AutoHome Batteries",
+      },
+      offers: {
+        "@type": "Offer",
+        url: window.location.href,
+        priceCurrency: "INR",
+        price: priceVal,
+        availability:
+          stockVal > 0
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+        itemCondition: "https://schema.org/NewCondition",
+        seller: {
+          "@type": "Organization",
+          name: "AutoHome Batteries",
+        },
+      },
+    };
+
+    let script = document.getElementById("product-jsonld");
+    if (!script) {
+      script = document.createElement("script");
+      script.id = "product-jsonld";
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(schema);
+
+    return () => {
+      const existing = document.getElementById("product-jsonld");
+      if (existing) existing.remove();
+    };
+  }, [product]);
+
   const loadProductDetails = async () => {
     setLoading(true);
     try {

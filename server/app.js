@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/authRoutes.js";
+import seoRoutes from "./routes/seoRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
@@ -85,6 +86,7 @@ app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/admin/maintenance", maintenanceRoutes);
 app.use("/api/admin/dashboard", dashboardRoutes);
 app.use("/api/admin/suppliers", supplierRoutes);
+app.use("/api/seo", seoRoutes);
 
 // Error handling
 app.use(notFound);
