@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Battery,
@@ -24,7 +24,6 @@ import toast from "react-hot-toast";
 const FormattedDescription = ({ text }) => {
   if (!text) return null;
 
-  // Normalize pasted newlines, bullet symbols, and extra spaces
   const normalized = String(text)
     .replace(/\r\n/g, "\n")
     .replace(/\t+/g, " ")
@@ -46,7 +45,6 @@ const FormattedDescription = ({ text }) => {
         const isBullet = bulletRegex.test(line);
         const cleanLine = line.replace(bulletRegex, "").trim();
 
-        // Check for "Key: Value" spec format (e.g., "Warranty: 36 Months")
         const colonIdx = cleanLine.indexOf(":");
         const hasKeyValue =
           colonIdx > 1 &&
@@ -118,11 +116,23 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const shareRef = useRef(null);
 
   useEffect(() => {
     loadProductDetails();
   }, [id]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (shareRef.current && !shareRef.current.contains(event.target)) {
+        setShareMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const loadProductDetails = async () => {
     setLoading(true);
@@ -196,7 +206,6 @@ const ProductDetail = () => {
     product.sku || ""
   )}.%20Please%20confirm%20availability,%20compatibility%20and%20final%20price.`;
 
-  // Share product URL & formatted message
   const shareUrl =
     typeof window !== "undefined"
       ? window.location.href
@@ -216,8 +225,11 @@ const ProductDetail = () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Product link copied to clipboard!");
-      setTimeout(() => setCopied(false), 2000);
+      toast.success("Product link copied!");
+      setTimeout(() => {
+        setCopied(false);
+        setShareMenuOpen(false);
+      }, 1200);
     } catch {
       const tempInput = document.createElement("input");
       tempInput.value = shareUrl;
@@ -227,11 +239,15 @@ const ProductDetail = () => {
       document.body.removeChild(tempInput);
       setCopied(true);
       toast.success("Product link copied!");
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => {
+        setCopied(false);
+        setShareMenuOpen(false);
+      }, 1200);
     }
   };
 
   const handleNativeShare = async () => {
+    setShareMenuOpen(false);
     if (navigator.share) {
       try {
         await navigator.share({
@@ -252,13 +268,70 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50/60 pt-32 sm:pt-36 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-blue transition-colors mb-6 group cursor-pointer"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Catalog</span>
-        </button>
+        {/* Top Bar: Back Button + Top-Right Share Corner Button */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-blue transition-colors group cursor-pointer"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            <span>Back to Catalog</span>
+          </button>
+
+          <div ref={shareRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setShareMenuOpen((prev) => !prev)}
+              aria-label="Share product"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-xs text-xs font-bold transition-all cursor-pointer"
+            >
+              <Share2 size={14} className="text-blue" />
+              <span>Share</span>
+            </button>
+
+            {shareMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 z-30">
+                <a
+                  href={whatsappShareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShareMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                >
+                  <WhatsAppIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Share via WhatsApp</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer text-left"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={15} className="text-emerald-600 shrink-0" />
+                      <span className="text-emerald-700">Link Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={15} className="text-gray-500 shrink-0" />
+                      <span>Copy Product Link</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNativeShare}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer text-left border-t border-gray-100"
+                >
+                  <Share2 size={15} className="text-blue shrink-0" />
+                  <span>More Apps...</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Multi-Angle Gallery */}
@@ -427,61 +500,6 @@ const ProductDetail = () => {
                 <ShieldCheck size={14} className="text-emerald-600" /> 100% Genuine Manufacturer
                 Guarantee &amp; Doorstep Support
               </p>
-            </div>
-
-            {/* Share Product Section */}
-            <div className="p-4 rounded-2xl bg-white border border-gray-100 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue flex items-center justify-center shrink-0">
-                  <Share2 size={16} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-gray-900">Share this Battery</h4>
-                  <p className="text-[11px] text-gray-500">
-                    Send specs &amp; link to family, electrician or friends
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <a
-                  href={whatsappShareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition-colors"
-                >
-                  <WhatsAppIcon className="w-3.5 h-3.5" />
-                  <span>WhatsApp</span>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold transition-colors cursor-pointer"
-                >
-                  {copied ? (
-                    <>
-                      <Check size={14} className="text-emerald-600" />
-                      <span className="text-emerald-700">Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      <span>Copy Link</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleNativeShare}
-                  aria-label="Share via other apps"
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-navy/5 hover:bg-navy/10 text-navy border border-gray-200 text-xs font-bold transition-colors cursor-pointer"
-                >
-                  <Share2 size={14} />
-                  <span>More</span>
-                </button>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
