@@ -1,4 +1,6 @@
 import "dotenv/config";
+import http from "http";
+import https from "https";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -17,13 +19,28 @@ import notFound from "./middleware/notFoundMiddleware.js";
 
 const app = express();
 
+// Trust Render's reverse proxy so rate-limiters read real client IPs accurately
+app.set("trust proxy", 1);
+
 // Security headers
 app.use(helmet());
 
-// CORS
+// CORS (supports main domain, www subdomain, local dev, and server-to-server health monitors)
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "https://autohomebatteries.in",
+  "https://www.autohomebatteries.in",
+  "http://localhost:5173",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -32,6 +49,17 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+
+// Health check (placed before rate limiters so uptime pingers never get blocked)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "ok",
+    message: "AutoHome Batteries API is running",
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // Rate limiting
 const authLimiter = rateLimit({
@@ -43,11 +71,6 @@ const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 30,
   message: { success: false, message: "Too many AI requests, please try again later." },
-});
-
-// Health check
-app.get("/api/health", (req, res) => {
-  res.json({ success: true, message: "AutoHome Batteries API is running" });
 });
 
 // Routes
@@ -66,5 +89,26 @@ app.use("/api/admin/suppliers", supplierRoutes);
 // Error handling
 app.use(notFound);
 app.use(errorHandler);
+
+// Keep-alive self-pinger (pings Render's public URL every 10 minutes in production)
+const externalUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL;
+if (process.env.NODE_ENV === "production" && externalUrl) {
+  const healthUrl = `${externalUrl.replace(/\/$/, "")}/api/health`;
+  const client = healthUrl.startsWith("https") ? https : http;
+  const TEN_MINUTES = 10 * 60 * 1000;
+
+  const pingInterval = setInterval(() => {
+    client
+      .get(healthUrl, (res) => {
+        res.resume(); // Drain response stream to prevent memory leaks
+      })
+      .on("error", (err) => {
+        console.error("Keep-alive ping failed:", err.message);
+      });
+  }, TEN_MINUTES);
+
+  // Allow clean process exit during Render redeploys
+  pingInterval.unref();
+}
 
 export default app;
