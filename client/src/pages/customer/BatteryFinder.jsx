@@ -506,7 +506,7 @@ Respond strictly with valid JSON (no markdown codeblocks):
                 const hasDiscount =
                   Number(p.mrp) > Number(p.sellingPrice) && Number(p.sellingPrice) > 0;
 
-                const waUrl = `https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20AI%20Battery%20Finder%20recommended%20${encodeURIComponent(
+                const waUrl = `https://wa.me/916369115420?text=Hello%20Auto%20Home%20Batteries,%20AI%20Battery%20Finder%20recommended%20${encodeURIComponent(
                   p.name
                 )}%20(${encodeURIComponent(p.brand)}%20${encodeURIComponent(
                   p.sku || ""

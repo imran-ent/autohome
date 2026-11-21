@@ -56,7 +56,7 @@ const CatalogProductCard = ({ p, navigate }) => {
       ? [`${p.ahCapacity}Ah Capacity`, p.warranty || "Official Warranty"]
       : [p.warranty || "Genuine Product"];
 
-  const waUrl = `https://wa.me/919789688756?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
+  const waUrl = `https://wa.me/916369115420?text=Hello%20Auto%20Home%20Batteries,%20I%20am%20interested%20in%20booking%20the%20${encodeURIComponent(
     p.name
   )}%20(${encodeURIComponent(p.brand)}%20${encodeURIComponent(
     p.sku || ""
