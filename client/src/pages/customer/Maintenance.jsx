@@ -12,6 +12,7 @@ import {
   Truck,
   Sparkles,
   X,
+  ClipboardList,
 } from "lucide-react";
 import { maintenanceService } from "../../services/maintenanceService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -20,7 +21,7 @@ import { Button } from "../../components/common/Button.jsx";
 import { Input } from "../../components/common/Input.jsx";
 import { Textarea } from "../../components/common/Textarea.jsx";
 import { Card } from "../../components/common/Card.jsx";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Maintenance = () => {
   const navigate = useNavigate();
@@ -169,13 +170,23 @@ const Maintenance = () => {
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8 text-center sm:text-left">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-          Book Maintenance Service
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Get an expert technician at your doorstep within 24 hours.
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-center sm:text-left">
+        <div>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            Book Maintenance Service
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Get an expert technician at your doorstep within 24 hours.
+          </p>
+        </div>
+
+        <Link
+          to="/my-maintenance"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 hover:border-blue-600 hover:text-blue-600 text-gray-800 text-xs font-bold shadow-xs transition-colors self-center sm:self-auto"
+        >
+          <ClipboardList size={16} className="text-blue-600" />
+          <span>My Maintenance Updates</span>
+        </Link>
       </div>
 
       <div className="bg-blue-50/80 border border-blue-200/60 rounded-2xl p-5 mb-8 flex items-start gap-3.5 shadow-xs">

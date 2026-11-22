@@ -11,7 +11,7 @@ import Batteries from "./pages/customer/Batteries.jsx";
 import BatteryFinder from "./pages/customer/BatteryFinder.jsx";
 import Compare from "./pages/customer/Compare.jsx";
 import ProductDetail from "./pages/customer/ProductDetail.jsx";
-
+import MyOrders from "./pages/customer/MyOrders.jsx";
 import Maintenance from "./pages/customer/Maintenance.jsx";
 import MyMaintenance from "./pages/customer/MyMaintenance.jsx";
 import AboutUs from "./pages/customer/AboutUs.jsx";
@@ -63,6 +63,8 @@ function App() {
             <Route path="battery-finder" element={<BatteryFinder />} />
             <Route path="compare" element={<Compare />} />
             <Route path="products/:id" element={<ProductDetail />} />
+            <Route path="my-orders" element={<CustomerRoute element={<MyOrders />} />} />
+            <Route path="orders" element={<Navigate to="/my-orders" replace />} />
             <Route path="maintenance" element={<Maintenance />} />
             <Route path="my-maintenance" element={<CustomerRoute element={<MyMaintenance />} />} />
             <Route path="about-us" element={<AboutUs />} />
@@ -82,7 +84,7 @@ function App() {
             <Route path="maintenance" element={<AdminRoute element={<AdminMaintenance />} />} />
             <Route path="suppliers" element={<AdminRoute element={<AdminSuppliers />} />} />
             <Route path="inventory" element={<AdminRoute element={<AdminInventory />} />} />
-            <Route path="/admin/technicians" element={<AdminTechnicians />} />
+            <Route path="technicians" element={<AdminRoute element={<AdminTechnicians />} />} />
           </Route>
 
           {/* Fallback redirect */}

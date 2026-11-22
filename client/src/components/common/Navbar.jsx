@@ -127,8 +127,9 @@ const Navbar = () => {
           {/* More Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
+              type="button"
               onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
                 secondaryNavLinks.some((l) => l.path === location.pathname)
                   ? "bg-white text-blue-600 font-bold shadow-xs"
                   : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
@@ -166,26 +167,42 @@ const Navbar = () => {
 
         {/* Right Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {!isAdminRoute && (
-            <Link
-              to="/my-orders"
-              onClick={(e) => handleNavClick(e, "/my-orders", "My Orders")}
-              className={`hidden sm:inline-flex text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all items-center gap-1 ${
-                location.pathname === "/my-orders"
-                  ? "bg-blue-50 text-blue-600 border-blue-200"
-                  : "bg-gray-50/80 text-gray-700 border-gray-200/60 hover:bg-gray-100"
-              }`}
-            >
-              <PackageCheck size={14} />
-              <span>Orders</span>
-            </Link>
+          {!isAdminRoute && !isAdmin && (
+            <>
+              <Link
+                to="/my-orders"
+                onClick={(e) => handleNavClick(e, "/my-orders", "My Orders")}
+                className={`hidden sm:inline-flex text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all items-center gap-1 ${
+                  location.pathname === "/my-orders"
+                    ? "bg-blue-50 text-blue-600 border-blue-200 font-bold"
+                    : "bg-gray-50/80 text-gray-700 border-gray-200/60 hover:bg-gray-100"
+                }`}
+              >
+                <PackageCheck size={14} />
+                <span>Orders</span>
+              </Link>
+
+              <Link
+                to="/my-maintenance"
+                onClick={(e) => handleNavClick(e, "/my-maintenance", "My Maintenance")}
+                className={`hidden sm:inline-flex text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all items-center gap-1 ${
+                  location.pathname === "/my-maintenance"
+                    ? "bg-blue-50 text-blue-600 border-blue-200 font-bold"
+                    : "bg-gray-50/80 text-gray-700 border-gray-200/60 hover:bg-gray-100"
+                }`}
+              >
+                <Wrench size={14} />
+                <span>My Service</span>
+              </Link>
+            </>
           )}
 
           {isAuthenticated && !isAdminRoute && (
             <button
+              type="button"
               onClick={logout}
               title="Logout"
-              className="hidden sm:inline-flex text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50/80 px-2.5 py-1.5 rounded-xl border border-rose-200/50 transition-all items-center gap-1"
+              className="hidden sm:inline-flex text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50/80 px-2.5 py-1.5 rounded-xl border border-rose-200/50 transition-all items-center gap-1 cursor-pointer"
             >
               <LogOut size={13} />
             </button>
@@ -212,6 +229,7 @@ const Navbar = () => {
           )}
 
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
             className="lg:hidden p-1.5 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
@@ -243,13 +261,25 @@ const Navbar = () => {
           </div>
 
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
-            <Link
-              to="/my-orders"
-              onClick={(e) => handleNavClick(e, "/my-orders", "My Orders")}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-xl"
-            >
-              <PackageCheck size={15} /> My Orders
-            </Link>
+            {!isAdmin && (
+              <>
+                <Link
+                  to="/my-orders"
+                  onClick={(e) => handleNavClick(e, "/my-orders", "My Orders")}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-xl"
+                >
+                  <PackageCheck size={15} /> My Orders
+                </Link>
+
+                <Link
+                  to="/my-maintenance"
+                  onClick={(e) => handleNavClick(e, "/my-maintenance", "My Maintenance")}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-gray-800 bg-gray-100 rounded-xl"
+                >
+                  <Wrench size={15} /> My Maintenance Updates
+                </Link>
+              </>
+            )}
 
             {isAuthenticated ? (
               <>
@@ -262,14 +292,8 @@ const Navbar = () => {
                     <ShieldCheck size={15} className="text-amber-400" /> Admin Dashboard
                   </Link>
                 )}
-                <Link
-                  to="/my-maintenance"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-gray-700 bg-gray-100 rounded-xl"
-                >
-                  <Wrench size={15} /> My Maintenance Visits
-                </Link>
                 <button
+                  type="button"
                   onClick={() => {
                     logout();
                     setMobileMenuOpen(false);
