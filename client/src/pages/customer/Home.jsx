@@ -779,77 +779,118 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Why Choose AutoHome Batteries */}
-      <section className="py-16 sm:py-20 bg-offwhite">
-        <div className="container-premium px-3 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal mb-3">
-              Why Choose AutoHome Batteries
-            </h2>
-            <p className="text-sm sm:text-base text-gray-500">
-              Genuine products, doorstep installation, and reliable post-sale care in Pernambut.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {features.map((item) => {
-              const Icon = item.icon;
+      {/* Service Perks & Value Props */}
+      <section className="py-20 bg-offwhite">
+        <div className="container-premium">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feat) => {
+              const Icon = feat.icon;
               return (
-                <Card
-                  key={item.title}
-                  className="p-6 border border-gray-100 bg-white shadow-xs hover:shadow-md transition-all"
+                <div
+                  key={feat.title}
+                  className="p-8 rounded-xl border border-gray-100 bg-white hover:elevated"
                 >
-                  <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue flex items-center justify-center mb-4">
-                    <Icon size={22} />
+                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue mb-4">
+                    <Icon size={24} strokeWidth={2.5} />
                   </div>
-                  <h3 className="text-base font-bold text-charcoal mb-2">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </Card>
+                  <h3 className="text-lg font-bold text-charcoal mb-2">{feat.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{feat.desc}</p>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Direct WhatsApp Message & Store Support CTA */}
-      <section className="py-16 bg-navy text-white">
-        <div className="container-premium px-4 sm:px-6">
-          <div className="rounded-3xl bg-white/5 border border-white/10 p-6 sm:p-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gold mb-2">
-                <MapPin size={14} />
-                <span>AutoHome Batteries • Pernambut</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-                Need Help Choosing the Right Battery?
-              </h2>
-              <p className="text-sm sm:text-base text-gray-300">
-                Message us directly on WhatsApp for instant price quotes, old battery exchange value, and same-day doorstep installation.
-              </p>
+      {/* Maintenance & Repair CTA Section */}
+      <section className="py-20 bg-navy">
+        <div className="container-premium">
+          <div className="bg-white/5 rounded-2xl p-10 md:p-16 border border-white/10 backdrop-blur-sm text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Battery Maintenance &amp; Inverter Repair
+            </h2>
+            <p className="text-gray-300 text-lg mb-8 max-w-xl mx-auto">
+              Is your battery not charging or giving low backup? Book a professional maintenance service and get a technician visit within 24 hours.
+            </p>
+            <div className="flex justify-center">
+              <Button
+                variant="gold"
+                size="lg"
+                onClick={() => handleProtectedNav("/maintenance", "Maintenance & Repair")}
+              >
+                <Wrench size={20} /> Book Maintenance &amp; Repair
+              </Button>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+      {/* Direct Call, WhatsApp & Shop Location Section */}
+      <section className="py-20 bg-offwhite">
+        <div className="container-premium">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-charcoal mb-2">Contact &amp; Store Location</h2>
+            <p className="text-gray-500">Speak with our battery experts, message on WhatsApp, or visit our shop in Pernambut</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Card className="p-8 rounded-2xl border border-gray-200 bg-white text-center flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 bg-navy/5 rounded-xl flex items-center justify-center mx-auto mb-4 text-navy">
+                  <Phone size={26} />
+                </div>
+                <h3 className="text-lg font-bold text-charcoal mb-2">Call or WhatsApp Us</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Instant assistance for pricing, compatibility &amp; doorstep service
+                </p>
+              </div>
+              <div className="space-y-3">
+                <a
+                  href={generalWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl transition-colors shadow-xs"
+                >
+                  <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
+                  <span>Message on WhatsApp</span>
+                </a>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <a
+                    href="tel:+919789688756"
+                    style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
+                  >
+                    <Phone size={15} /> +91 97896 88756
+                  </a>
+                  <a
+                    href="tel:+919443437168"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-navy text-xs font-bold rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"
+                  >
+                    <Phone size={15} /> +91 94434 37168
+                  </a>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-8 rounded-2xl border border-gray-200 bg-white text-center flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-blue">
+                  <MapPin size={26} />
+                </div>
+                <h3 className="text-lg font-bold text-charcoal mb-2">Visit Our Shop</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Opp. SN Tea Stall, Maula Street, Pernambut
+                </p>
+              </div>
               <a
-                href={generalWhatsappUrl}
+                href="https://maps.app.goo.gl/Eo7VaAAysAE992YH8?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold shadow-lg transition-colors"
+                style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
               >
-                <WhatsAppIcon className="w-5 h-5 text-white shrink-0" />
-                <span>Message on WhatsApp</span>
+                <MapPin size={15} /> Open Google Maps
               </a>
-              <a
-                href="tel:+919789688756"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-gray-100 text-navy text-sm font-bold transition-colors"
-              >
-                <Phone size={18} />
-                <span>Call +91 97896 88756</span>
-              </a>
-            </div>
+            </Card>
           </div>
         </div>
       </section>
