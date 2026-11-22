@@ -21,6 +21,17 @@ import { Button } from "../../components/common/Button.jsx";
 import { formatCurrency } from "../../utils/helpers.js";
 import toast from "react-hot-toast";
 
+const formatWarranty = (warranty) => {
+  if (warranty === null || warranty === undefined || String(warranty).trim() === "") {
+    return "36 Months";
+  }
+  const value = String(warranty).trim();
+  if (/^\d+$/.test(value)) {
+    return `${value} ${Number(value) === 1 ? "Month" : "Months"}`;
+  }
+  return value;
+};
+
 const FormattedDescription = ({ text }) => {
   if (!text) return null;
 
@@ -601,7 +612,7 @@ const ProductDetail = () => {
                 <div className="p-2.5 rounded-lg bg-gray-50">
                   <span className="text-gray-400 block text-[10px]">Warranty</span>
                   <span className="font-bold text-gray-800">
-                    {product.warranty || "36 Months"}
+                    {formatWarranty(product.warranty)}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-gray-50">
