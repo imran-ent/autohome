@@ -13,14 +13,9 @@ import {
   MapPin,
   X,
 } from "lucide-react";
-import axios from "axios";
+import { technicianService } from "../../services/technicianService.js";
 import toast from "react-hot-toast";
 import { Card } from "../../components/common/Card.jsx";
-
-const rawApiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const API_BASE = rawApiUrl.endsWith("/api")
-  ? rawApiUrl
-  : `${rawApiUrl.replace(/\/$/, "")}/api`;
 
 const INITIAL_FORM = {
   name: "",
@@ -46,18 +41,10 @@ const AdminTechnicians = () => {
   const [form, setForm] = useState(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
 
-  const authHeaders = () => {
-    const token = localStorage.getItem("token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
   const fetchTechnicians = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_BASE}/technicians`, {
-        headers: authHeaders(),
-        withCredentials: true,
-      });
+      const { data } = await technicianService.getAll();
       setTechnicians(data?.data || []);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load technicians");
@@ -99,20 +86,13 @@ const AdminTechnicians = () => {
     setSaving(true);
     try {
       if (editingTech) {
-        const { data } = await axios.put(
-          `${API_BASE}/technicians/${editingTech._id}`,
-          form,
-          { headers: authHeaders(), withCredentials: true }
-        );
+        const { data } = await technicianService.update(editingTech._id, form);
         setTechnicians((prev) =>
           prev.map((t) => (t._id === editingTech._id ? data.data : t))
         );
         toast.success("Technician updated");
       } else {
-        const { data } = await axios.post(`${API_BASE}/technicians`, form, {
-          headers: authHeaders(),
-          withCredentials: true,
-        });
+        const { data } = await technicianService.create(form);
         setTechnicians((prev) => [data.data, ...prev]);
         toast.success("Technician added");
       }
@@ -127,11 +107,9 @@ const AdminTechnicians = () => {
   const handleToggleDuty = async (tech) => {
     try {
       const nextStatus = !tech.isAvailable;
-      const { data } = await axios.put(
-        `${API_BASE}/technicians/${tech._id}`,
-        { isAvailable: nextStatus },
-        { headers: authHeaders(), withCredentials: true }
-      );
+      const { data } = await technicianService.update(tech._id, {
+        isAvailable: nextStatus,
+      });
       setTechnicians((prev) =>
         prev.map((t) => (t._id === tech._id ? data.data : t))
       );
@@ -146,10 +124,7 @@ const AdminTechnicians = () => {
   const handleDelete = async (tech) => {
     if (!window.confirm(`Remove technician "${tech.name}"?`)) return;
     try {
-      await axios.delete(`${API_BASE}/technicians/${tech._id}`, {
-        headers: authHeaders(),
-        withCredentials: true,
-      });
+      await technicianService.remove(tech._id);
       setTechnicians((prev) => prev.filter((t) => t._id !== tech._id));
       toast.success("Technician deleted");
     } catch (error) {

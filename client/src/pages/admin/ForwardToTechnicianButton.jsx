@@ -1,14 +1,9 @@
 import { useState } from "react";
 import { Phone, X, CheckCircle2, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import { technicianService } from "../../services/technicianService.js";
 import toast from "react-hot-toast";
 import { formatAddress, formatDateTime } from "../../utils/helpers.js";
-
-const rawApiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const API_BASE = rawApiUrl.endsWith("/api")
-  ? rawApiUrl
-  : `${rawApiUrl.replace(/\/$/, "")}/api`;
 
 const WhatsAppIcon = ({ className = "w-4 h-4" }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -66,11 +61,7 @@ const ForwardToTechnicianButton = ({ request }) => {
     setOpen(true);
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const { data } = await axios.get(`${API_BASE}/technicians`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        withCredentials: true,
-      });
+      const { data } = await technicianService.getAll();
       setTechnicians(data?.data || []);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load technicians");

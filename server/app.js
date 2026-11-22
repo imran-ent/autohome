@@ -15,6 +15,7 @@ import inventoryRoutes from "./routes/inventoryRoutes.js";
 import maintenanceRoutes from "./routes/maintenanceRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
+import technicianRoutes from "./routes/technicianRoutes.js";
 import errorHandler from "./middleware/errorMiddleware.js";
 import notFound from "./middleware/notFoundMiddleware.js";
 
@@ -86,6 +87,8 @@ app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/admin/maintenance", maintenanceRoutes);
 app.use("/api/admin/dashboard", dashboardRoutes);
 app.use("/api/admin/suppliers", supplierRoutes);
+app.use("/api/technicians", technicianRoutes);
+app.use("/api/admin/technicians", technicianRoutes);
 app.use("/api/seo", seoRoutes);
 
 // Error handling
