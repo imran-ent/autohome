@@ -1,16 +1,17 @@
-﻿import { useState, useEffect } from "react";
-import { 
-  Battery, 
-  Clock, 
-  User, 
-  Phone, 
-  MapPin, 
-  FileText, 
-  Upload, 
+﻿import { useState, useEffect, useRef } from "react";
+import {
+  Battery,
+  Clock,
+  User,
+  Phone,
+  MapPin,
+  FileText,
+  Upload,
   ArrowRight,
   Car,
   Truck,
-  Sparkles
+  Sparkles,
+  X,
 } from "lucide-react";
 import { maintenanceService } from "../../services/maintenanceService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -24,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 const Maintenance = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -45,10 +47,20 @@ const Maintenance = () => {
       setForm((prev) => ({
         ...prev,
         customerName: prev.customerName || user.name || user.fullName || "",
-        customerMobile: prev.customerMobile || user.mobile || user.phone || user.phoneNumber || "",
+        customerMobile:
+          prev.customerMobile || user.mobile || user.phone || user.phoneNumber || "",
       }));
     }
   }, [user]);
+
+  // Revoke object URL on change or unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -56,17 +68,28 @@ const Maintenance = () => {
 
   const handleImageChange = (e) => {
     const file = e.target?.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image must be less than 5MB");
-        return;
-      }
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
-        return;
-      }
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      e.target.value = "";
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      e.target.value = "";
+      return;
+    }
+
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -85,17 +108,36 @@ const Maintenance = () => {
     "Acid leakage or swelling",
   ];
 
+  const handleAddQuickIssue = (issue) => {
+    const current = form.problemDescription.trim();
+    if (current.toLowerCase().includes(issue.toLowerCase())) return;
+    handleChange("problemDescription", current ? `${current}, ${issue}` : issue);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const name = form.customerName.trim();
-    const mobile = form.customerMobile.trim();
+    const rawMobile = form.customerMobile.trim();
+    const digitsOnly = rawMobile.replace(/\D/g, "");
+    const normalizedMobile =
+      digitsOnly.length === 12 && digitsOnly.startsWith("91")
+        ? digitsOnly.slice(2)
+        : digitsOnly.length === 11 && digitsOnly.startsWith("0")
+        ? digitsOnly.slice(1)
+        : digitsOnly;
+
     const address = form.address.trim();
     const category = form.batteryCategory;
     const problem = form.problemDescription.trim();
 
-    if (!name || !mobile || !address || !category || !problem) {
+    if (!name || !rawMobile || !address || !category || !problem) {
       toast.error("Please fill in all required fields (*)");
+      return;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(normalizedMobile)) {
+      toast.error("Please enter a valid 10-digit mobile number");
       return;
     }
 
@@ -103,7 +145,7 @@ const Maintenance = () => {
     try {
       const formData = new FormData();
       formData.append("customerName", name);
-      formData.append("customerMobile", mobile);
+      formData.append("customerMobile", normalizedMobile);
       formData.append(
         "address",
         JSON.stringify({ street: address, city: "", state: "", pincode: "" })
@@ -128,8 +170,12 @@ const Maintenance = () => {
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <div className="mb-8 text-center sm:text-left">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Book Maintenance Service</h1>
-        <p className="text-gray-500 text-sm mt-1">Get an expert technician at your doorstep within 24 hours.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+          Book Maintenance Service
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          Get an expert technician at your doorstep within 24 hours.
+        </p>
       </div>
 
       <div className="bg-blue-50/80 border border-blue-200/60 rounded-2xl p-5 mb-8 flex items-start gap-3.5 shadow-xs">
@@ -137,19 +183,23 @@ const Maintenance = () => {
           <Battery size={20} />
         </div>
         <div>
-          <h3 className="font-bold text-gray-900 text-sm">24-Hour Express Visit Guarantee</h3>
+          <h3 className="font-bold text-gray-900 text-sm">
+            24-Hour Express Visit Guarantee
+          </h3>
           <p className="text-xs text-blue-800 leading-relaxed mt-0.5">
-            Book your slot now and a certified battery technician will visit your location within 24 hours.
+            Book your slot now and a certified battery technician will visit your
+            location within 24 hours.
           </p>
         </div>
       </div>
 
       <Card className="p-6 sm:p-10 border border-gray-100 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
-          
           {/* Customer Details */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">1. Contact Information</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+              1. Contact Information
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Customer Name *"
@@ -180,7 +230,9 @@ const Maintenance = () => {
 
           {/* Battery Category Selection */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-2">Battery Category *</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-2">
+              Battery Category *
+            </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {CATEGORY_OPTIONS.map((cat) => {
                 const Icon = cat.icon;
@@ -190,13 +242,16 @@ const Maintenance = () => {
                     type="button"
                     key={cat.value}
                     onClick={() => handleChange("batteryCategory", cat.value)}
-                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-semibold transition-all ${
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                       isSelected
                         ? "bg-blue-50 border-blue-600 text-blue-600 shadow-xs font-bold"
                         : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    <Icon size={16} className={isSelected ? "text-blue-600" : "text-gray-500"} />
+                    <Icon
+                      size={16}
+                      className={isSelected ? "text-blue-600" : "text-gray-500"}
+                    />
                     <span>{cat.label}</span>
                   </button>
                 );
@@ -225,22 +280,19 @@ const Maintenance = () => {
           {/* Issue Description & Quick Tags */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-semibold text-gray-700">Problem Description *</label>
+              <label className="block text-xs font-semibold text-gray-700">
+                Problem Description *
+              </label>
             </div>
-            
+
             {/* Quick Issue Chips */}
             <div className="flex flex-wrap gap-1.5 mb-3">
               {QUICK_ISSUES.map((issue) => (
                 <button
                   type="button"
                   key={issue}
-                  onClick={() =>
-                    handleChange(
-                      "problemDescription",
-                      form.problemDescription ? `${form.problemDescription}, ${issue}` : issue
-                    )
-                  }
-                  className="text-[11px] font-medium bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-600 px-2.5 py-1 rounded-lg border border-gray-200/60 transition-all flex items-center gap-1"
+                  onClick={() => handleAddQuickIssue(issue)}
+                  className="text-[11px] font-medium bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-600 px-2.5 py-1 rounded-lg border border-gray-200/60 transition-all flex items-center gap-1 cursor-pointer"
                 >
                   <Sparkles size={11} className="text-amber-500" />
                   {issue}
@@ -263,23 +315,37 @@ const Maintenance = () => {
               <Upload size={15} className="text-gray-500" /> Battery Photo (Optional)
             </p>
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleImageChange}
               className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
             {imagePreview && (
-              <div className="mt-3">
+              <div className="mt-3 relative inline-block">
                 <img
                   src={imagePreview}
-                  alt="Preview"
+                  alt="Battery preview"
                   className="w-24 h-24 rounded-lg object-cover border border-gray-200"
                 />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  aria-label="Remove uploaded photo"
+                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-rose-600 transition-colors cursor-pointer"
+                >
+                  <X size={13} />
+                </button>
               </div>
             )}
           </div>
 
-          <Button type="submit" variant="primary" className="w-full py-3.5 flex items-center justify-center gap-2" disabled={loading}>
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full py-3.5 flex items-center justify-center gap-2"
+            disabled={loading}
+          >
             {loading ? "Submitting Request..." : "Submit Maintenance Request"}
             {!loading && <ArrowRight size={18} />}
           </Button>
