@@ -34,6 +34,17 @@ const QUICK_SEARCH_TAGS = [
   "Two Wheeler",
 ];
 
+const WhatsAppIcon = ({ className = "w-4 h-4" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.15 1.6 5.95L0 24l6.33-1.66a11.86 11.86 0 0 0 5.73 1.46h.01c6.56 0 11.9-5.34 11.9-11.9 0-3.18-1.24-6.17-3.45-8.42ZM12.07 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.76.99 1-3.66-.24-.38a9.85 9.85 0 0 1-1.51-5.26c0-5.45 4.44-9.89 9.9-9.89 2.64 0 5.13 1.03 7 2.9a9.83 9.83 0 0 1 2.9 7c0 5.46-4.44 9.89-9.89 9.89Zm5.43-7.41c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35Z" />
+  </svg>
+);
+
 const CategoryIllustration = ({ type }) => {
   switch (type) {
     case "home-inverter":
@@ -284,9 +295,10 @@ const FeaturedProductCard = ({ p, navigate }) => {
           href={waUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-2.5 px-3 bg-white hover:bg-green-50 text-green-700 border border-green-600 text-xs font-bold rounded-xl transition-colors inline-flex items-center justify-center"
+          className="w-full py-2.5 px-3 bg-white hover:bg-green-50 text-green-700 border border-green-600 text-xs font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-1.5"
         >
-          Send Enquiry
+          <WhatsAppIcon className="w-3.5 h-3.5 text-green-600 shrink-0" />
+          <span>Send Enquiry</span>
         </a>
       </div>
     </div>
@@ -305,6 +317,10 @@ const Home = () => {
 
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  const generalWhatsappUrl = `https://wa.me/916369115420?text=${encodeURIComponent(
+    "Hello AutoHome Batteries, I visited your website and need assistance choosing the right battery/inverter. Please help me."
+  )}`;
 
   const handleProtectedNav = (path, featureName) => {
     if (!isAuthenticated) {
@@ -763,110 +779,92 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Service Perks & Value Props */}
-      <section className="py-20 bg-offwhite">
-        <div className="container-premium">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feat) => {
-              const Icon = feat.icon;
+      {/* Why Choose AutoHome Batteries */}
+      <section className="py-16 sm:py-20 bg-offwhite">
+        <div className="container-premium px-3 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal mb-3">
+              Why Choose AutoHome Batteries
+            </h2>
+            <p className="text-sm sm:text-base text-gray-500">
+              Genuine products, doorstep installation, and reliable post-sale care in Pernambut.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {features.map((item) => {
+              const Icon = item.icon;
               return (
-                <div
-                  key={feat.title}
-                  className="p-8 rounded-xl border border-gray-100 bg-white hover:elevated"
+                <Card
+                  key={item.title}
+                  className="p-6 border border-gray-100 bg-white shadow-xs hover:shadow-md transition-all"
                 >
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue mb-4">
-                    <Icon size={24} strokeWidth={2.5} />
+                  <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue flex items-center justify-center mb-4">
+                    <Icon size={22} />
                   </div>
-                  <h3 className="text-lg font-bold text-charcoal mb-2">{feat.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{feat.desc}</p>
-                </div>
+                  <h3 className="text-base font-bold text-charcoal mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </Card>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Maintenance & Repair CTA Section */}
-      <section className="py-20 bg-navy">
-        <div className="container-premium">
-          <div className="bg-white/5 rounded-2xl p-10 md:p-16 border border-white/10 backdrop-blur-sm text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Battery Maintenance & Inverter Repair
-            </h2>
-            <p className="text-gray-300 text-lg mb-8 max-w-xl mx-auto">
-              Is your battery not charging or giving low backup? Book a professional maintenance service and get a technician visit within 24 hours.
-            </p>
-            <div className="flex justify-center">
-              <Button
-                variant="gold"
-                size="lg"
-                onClick={() => handleProtectedNav("/maintenance", "Maintenance & Repair")}
+      {/* Direct WhatsApp Message & Store Support CTA */}
+      <section className="py-16 bg-navy text-white">
+        <div className="container-premium px-4 sm:px-6">
+          <div className="rounded-3xl bg-white/5 border border-white/10 p-6 sm:p-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gold mb-2">
+                <MapPin size={14} />
+                <span>AutoHome Batteries • Pernambut</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+                Need Help Choosing the Right Battery?
+              </h2>
+              <p className="text-sm sm:text-base text-gray-300">
+                Message us directly on WhatsApp for instant price quotes, old battery exchange value, and same-day doorstep installation.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <a
+                href={generalWhatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold shadow-lg transition-colors"
               >
-                <Wrench size={20} /> Book Maintenance & Repair
-              </Button>
+                <WhatsAppIcon className="w-5 h-5 text-white shrink-0" />
+                <span>Message on WhatsApp</span>
+              </a>
+              <a
+                href="tel:+919789688756"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-gray-100 text-navy text-sm font-bold transition-colors"
+              >
+                <Phone size={18} />
+                <span>Call +91 97896 88756</span>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Direct Call & Shop Location Section */}
-      <section className="py-20 bg-offwhite">
-        <div className="container-premium">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-charcoal mb-2">Contact & Store Location</h2>
-            <p className="text-gray-500">Speak with our battery experts or visit our shop in Pernambut</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="p-8 rounded-2xl border border-gray-200 bg-white text-center flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 bg-navy/5 rounded-xl flex items-center justify-center mx-auto mb-4 text-navy">
-                  <Phone size={26} />
-                </div>
-                <h3 className="text-lg font-bold text-charcoal mb-2">Call Us Directly</h3>
-                <p className="text-sm text-gray-500 mb-6">
-                  Instant assistance for pricing, compatibility & doorstep service
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <a
-                  href="tel:+919789688756"
-                  style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
-                >
-                  <Phone size={15} /> +91 97896 88756
-                </a>
-                <a
-                  href="tel:+919443437168"
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-navy text-xs font-bold rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"
-                >
-                  <Phone size={15} /> +91 94434 37168
-                </a>
-              </div>
-            </Card>
-
-            <Card className="p-8 rounded-2xl border border-gray-200 bg-white text-center flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-blue">
-                  <MapPin size={26} />
-                </div>
-                <h3 className="text-lg font-bold text-charcoal mb-2">Visit Our Shop</h3>
-                <p className="text-sm text-gray-600 mb-6">
-                  Opp. SN Tea Stall, Maula Street, Pernambut
-                </p>
-              </div>
-              <a
-                href="https://maps.app.goo.gl/Eo7VaAAysAE992YH8?g_st=aw"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ backgroundColor: "#0f172a", color: "#ffffff" }}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-navy text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
-              >
-                <MapPin size={15} /> Open Google Maps
-              </a>
-            </Card>
-          </div>
-        </div>
-      </section>
+      {/* Floating WhatsApp Message Button */}
+      <a
+        href={generalWhatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Message AutoHome Batteries on WhatsApp"
+        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2.5 px-4 py-3 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-bold shadow-xl hover:scale-105 transition-all"
+      >
+        <WhatsAppIcon className="w-5 h-5 text-white shrink-0" />
+        <span className="hidden sm:inline">WhatsApp Us</span>
+      </a>
     </div>
   );
 };
