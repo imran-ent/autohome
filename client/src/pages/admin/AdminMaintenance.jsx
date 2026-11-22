@@ -11,6 +11,7 @@ import {
   MapPin,
   RefreshCw,
   UserCog,
+  Trash2,
 } from "lucide-react";
 import { maintenanceService } from "../../services/maintenanceService.js";
 import toast from "react-hot-toast";
@@ -52,6 +53,20 @@ const getStatusColor = (status) => {
   }
 };
 
+const resolveAddress = (req) => {
+  const raw = req?.address || req?.serviceAddress || req?.user?.address;
+  if (!raw) return "Not provided";
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      return formatAddress(parsed) || parsed?.street || raw;
+    } catch {
+      return raw;
+    }
+  }
+  return formatAddress(raw) || raw.street || "Not provided";
+};
+
 const AdminMaintenance = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +75,7 @@ const AdminMaintenance = () => {
   const [search, setSearch] = useState("");
   const [selectedReq, setSelectedReq] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [form, setForm] = useState({
     status: "",
     assignedTechnician: "",
@@ -88,12 +104,14 @@ const AdminMaintenance = () => {
           (r) =>
             (r.requestId && String(r.requestId).toLowerCase().includes(query)) ||
             (r.customerName && r.customerName.toLowerCase().includes(query)) ||
-            (r.customerMobile && String(r.customerMobile).includes(query))
+            (r.customerMobile && String(r.customerMobile).includes(query)) ||
+            (r.problemDescription &&
+              r.problemDescription.toLowerCase().includes(query))
         );
       }
       setRequests(data);
       if (isManualRefresh) toast.success("Maintenance requests refreshed");
-    } catch (e) {
+    } catch {
       toast.error("Failed to load maintenance requests");
     } finally {
       setLoading(false);
@@ -136,6 +154,32 @@ const AdminMaintenance = () => {
     }
   };
 
+  const handleDelete = async (req) => {
+    const label = req.requestId || req._id?.slice(-6);
+    if (
+      !window.confirm(
+        `Delete maintenance request #${label} for ${req.customerName}? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingId(req._id);
+    try {
+      await maintenanceService.remove(req._id);
+      setRequests((prev) => prev.filter((item) => item._id !== req._id));
+      if (selectedReq?._id === req._id) {
+        setModalOpen(false);
+        setSelectedReq(null);
+      }
+      toast.success(`Request #${label} deleted`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete request");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto p-8">
@@ -156,7 +200,7 @@ const AdminMaintenance = () => {
             Maintenance Management
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Track, schedule, and assign technician service visits with customer locations
+            Track, schedule, forward, and manage technician service visits
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
@@ -173,7 +217,10 @@ const AdminMaintenance = () => {
             disabled={refreshing}
             className="flex items-center gap-2"
           >
-            <RefreshCw size={16} className={refreshing ? "animate-spin text-blue-600" : ""} />
+            <RefreshCw
+              size={16}
+              className={refreshing ? "animate-spin text-blue-600" : ""}
+            />
             <span>Refresh</span>
           </Button>
         </div>
@@ -185,7 +232,7 @@ const AdminMaintenance = () => {
           <div className="flex-1 w-full">
             <Input
               label="Search Requests"
-              placeholder="Search by Request ID, Customer Name, or Mobile..."
+              placeholder="Search by Request ID, Customer Name, Mobile, or Problem..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search size={16} className="text-gray-400" />}
@@ -223,32 +270,52 @@ const AdminMaintenance = () => {
             <tbody className="divide-y divide-gray-100 text-sm">
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-16 text-center text-gray-400 text-sm">
+                  <td
+                    colSpan="7"
+                    className="py-16 text-center text-gray-400 text-sm"
+                  >
                     No maintenance requests found matching your filter.
                   </td>
                 </tr>
               ) : (
                 requests.map((r) => (
-                  <tr key={r._id} className="hover:bg-gray-50/80 transition-colors">
+                  <tr
+                    key={r._id}
+                    className="hover:bg-gray-50/80 transition-colors align-top"
+                  >
                     <td className="py-4 px-4 font-mono text-xs font-bold text-gray-900">
                       #{r.requestId || r._id?.slice(-6)}
                     </td>
                     <td className="py-4 px-4">
-                      <div className="font-bold text-gray-900">{r.customerName}</div>
-                      <div className="text-xs text-gray-500">{r.customerMobile}</div>
+                      <div className="font-bold text-gray-900">
+                        {r.customerName}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {r.customerMobile}
+                      </div>
+                      {r.preferredVisitTime && (
+                        <div className="text-[11px] text-blue-600 mt-0.5">
+                          Slot: {r.preferredVisitTime}
+                        </div>
+                      )}
                     </td>
                     <td className="py-4 px-4 text-xs text-gray-600 max-w-xs">
                       <div className="flex items-start gap-1">
-                        <MapPin size={14} className="text-rose-500 shrink-0 mt-0.5" />
-                        <span className="line-clamp-2">
-                          {formatAddress(r.address || r.serviceAddress || r.customer?.address)}
-                        </span>
+                        <MapPin
+                          size={14}
+                          className="text-rose-500 shrink-0 mt-0.5"
+                        />
+                        <span className="wrap-break-word">{resolveAddress(r)}</span>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-xs text-gray-600">
-                      <span className="font-semibold text-gray-800">{r.batteryCategory}</span>
+                      <span className="font-semibold text-gray-800">
+                        {r.batteryCategory || "—"}
+                      </span>
                       {r.batteryBrand && (
-                        <span className="text-gray-400"> • {r.batteryBrand}</span>
+                        <span className="text-gray-500 block">
+                          {r.batteryBrand} {r.batteryModel || ""}
+                        </span>
                       )}
                     </td>
                     <td className="py-4 px-4 text-center">
@@ -265,12 +332,19 @@ const AdminMaintenance = () => {
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-4 text-xs text-gray-600 max-w-xs truncate">
-                      {r.problemDescription}
+                    <td className="py-4 px-4 text-xs text-gray-700 max-w-xs">
+                      <p className="line-clamp-3 whitespace-pre-line">
+                        {r.problemDescription || "—"}
+                      </p>
                     </td>
                     <td className="py-4 px-4 text-right">
                       <div className="inline-flex items-center justify-end gap-1.5">
-                        <ForwardToTechnicianButton request={r} />
+                        <ForwardToTechnicianButton
+                          request={{
+                            ...r,
+                            address: resolveAddress(r),
+                          }}
+                        />
                         <Button
                           variant="ghost"
                           size="sm"
@@ -279,6 +353,15 @@ const AdminMaintenance = () => {
                         >
                           <Headset size={15} className="mr-1" /> Manage
                         </Button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(r)}
+                          disabled={deletingId === r._id}
+                          title="Delete maintenance request"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -299,7 +382,8 @@ const AdminMaintenance = () => {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto border border-gray-100 z-10 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
               <h3 className="text-lg font-bold text-gray-900">
-                Update Request #{selectedReq.requestId || selectedReq._id?.slice(-6)}
+                Update Request #
+                {selectedReq.requestId || selectedReq._id?.slice(-6)}
               </h3>
               <button
                 type="button"
@@ -314,26 +398,48 @@ const AdminMaintenance = () => {
             <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 space-y-2 text-xs mb-5">
               <div className="flex justify-between">
                 <span className="text-gray-500">Customer Name:</span>
-                <span className="font-bold text-gray-900">{selectedReq.customerName}</span>
+                <span className="font-bold text-gray-900">
+                  {selectedReq.customerName}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Mobile:</span>
-                <span className="font-semibold text-gray-800">{selectedReq.customerMobile}</span>
+                <span className="font-semibold text-gray-800">
+                  {selectedReq.customerMobile}
+                </span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-gray-500 shrink-0">Service Address:</span>
                 <span className="font-medium text-gray-900 text-right">
-                  {formatAddress(
-                    selectedReq.address || selectedReq.serviceAddress || selectedReq.customer?.address
-                  )}
+                  {resolveAddress(selectedReq)}
                 </span>
               </div>
+              {selectedReq.preferredVisitTime && (
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-500 shrink-0">Preferred Slot:</span>
+                  <span className="font-medium text-blue-700 text-right">
+                    {selectedReq.preferredVisitTime}
+                  </span>
+                </div>
+              )}
               {selectedReq.problemDescription && (
                 <div className="flex justify-between gap-4 pt-1 border-t border-gray-200/60">
                   <span className="text-gray-500 shrink-0">Problem:</span>
                   <span className="font-medium text-gray-700 text-right">
                     {selectedReq.problemDescription}
                   </span>
+                </div>
+              )}
+              {selectedReq.image && (
+                <div className="pt-2 border-t border-gray-200/60">
+                  <span className="text-gray-500 block mb-1.5">
+                    Attached Photo:
+                  </span>
+                  <img
+                    src={selectedReq.image}
+                    alt="Customer battery"
+                    className="w-28 h-28 object-cover rounded-lg border border-gray-200"
+                  />
                 </div>
               )}
             </div>
@@ -348,14 +454,18 @@ const AdminMaintenance = () => {
               <Select
                 label="Status *"
                 value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target?.value ?? e })}
+                onChange={(e) =>
+                  setForm({ ...form, status: e.target?.value ?? e })
+                }
                 options={STATUSES.map((s) => ({ value: s, label: s }))}
               />
 
               <Input
                 label="Assigned Technician"
                 value={form.assignedTechnician}
-                onChange={(e) => setForm({ ...form, assignedTechnician: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, assignedTechnician: e.target.value })
+                }
                 placeholder="e.g. Rahul Sharma"
                 leftIcon={<User size={16} className="text-gray-400" />}
               />
@@ -364,7 +474,9 @@ const AdminMaintenance = () => {
                 label="Scheduled Visit Date & Time"
                 type="datetime-local"
                 value={form.scheduledDate}
-                onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, scheduledDate: e.target.value })
+                }
                 leftIcon={<Calendar size={16} className="text-gray-400" />}
               />
 
@@ -372,7 +484,9 @@ const AdminMaintenance = () => {
                 label="Service Charge (₹)"
                 type="number"
                 value={form.serviceCharge}
-                onChange={(e) => setForm({ ...form, serviceCharge: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, serviceCharge: e.target.value })
+                }
                 placeholder="e.g. 250"
                 leftIcon={<IndianRupee size={16} className="text-gray-400" />}
               />
@@ -380,19 +494,35 @@ const AdminMaintenance = () => {
               <Input
                 label="Technician Remarks"
                 value={form.technicianRemarks}
-                onChange={(e) => setForm({ ...form, technicianRemarks: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, technicianRemarks: e.target.value })
+                }
                 placeholder="Diagnostic findings or resolution notes..."
                 leftIcon={<Wrench size={16} className="text-gray-400" />}
               />
 
-              <div className="pt-4 flex flex-wrap items-center gap-3 justify-between border-t border-gray-100">
-                <ForwardToTechnicianButton
-                  request={{
-                    ...selectedReq,
-                    scheduledDate: form.scheduledDate || selectedReq.scheduledDate,
-                  }}
-                />
-                <div className="flex gap-3 ml-auto">
+              <div className="pt-4 flex flex-wrap items-center gap-2 justify-between border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <ForwardToTechnicianButton
+                    request={{
+                      ...selectedReq,
+                      address: resolveAddress(selectedReq),
+                      scheduledDate:
+                        form.scheduledDate || selectedReq.scheduledDate,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(selectedReq)}
+                    disabled={deletingId === selectedReq._id}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </button>
+                </div>
+
+                <div className="flex gap-2 ml-auto">
                   <Button
                     type="button"
                     variant="outline"
