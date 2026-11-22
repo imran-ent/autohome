@@ -18,7 +18,7 @@ import Button from "../../components/common/Button.jsx";
 import Input from "../../components/common/Input.jsx";
 import Select from "../../components/common/Select.jsx";
 import Card from "../../components/common/Card.jsx";
-import ForwardToTechnicianButton from "../../components/admin/ForwardToTechnicianButton.jsx";
+import ForwardToTechnicianButton from "./ForwardToTechnicianButton.jsx";
 import { formatAddress } from "../../utils/helpers.js";
 
 const STATUSES = [
