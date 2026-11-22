@@ -29,6 +29,7 @@ import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
 import AdminMaintenance from "./pages/admin/AdminMaintenance.jsx";
 import AdminSuppliers from "./pages/admin/AdminSuppliers.jsx";
 import AdminInventory from "./pages/admin/AdminInventory.jsx";
+import AdminTechnicians from "./pages/admin/AdminTechnicians.jsx";
 
 // Protected customer route wrapper
 const CustomerRoute = ({ element: Element }) => {
@@ -81,6 +82,7 @@ function App() {
             <Route path="maintenance" element={<AdminRoute element={<AdminMaintenance />} />} />
             <Route path="suppliers" element={<AdminRoute element={<AdminSuppliers />} />} />
             <Route path="inventory" element={<AdminRoute element={<AdminInventory />} />} />
+            <Route path="/admin/technicians" element={<AdminTechnicians />} />
           </Route>
 
           {/* Fallback redirect */}

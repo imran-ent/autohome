@@ -10,6 +10,7 @@ import {
   Wrench,
   Headset,
   ShoppingBag,
+  UserCog,
 } from "lucide-react";
 import { dashboardService } from "../../services/dashboardService.js";
 import toast from "react-hot-toast";
@@ -145,6 +146,14 @@ const AdminDashboard = () => {
       badge: "Service",
       color: "text-amber-600 bg-amber-50 border-amber-100",
     },
+    {
+      label: "Manage Technicians",
+      desc: "Call staff & forward service jobs",
+      path: "/admin/technicians",
+      icon: UserCog,
+      badge: "Staff",
+      color: "text-purple-600 bg-purple-50 border-purple-100",
+    },
   ];
 
   if (loading) {
@@ -228,7 +237,7 @@ const AdminDashboard = () => {
               Direct access to primary administrative controls.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {quickActions.map((action) => {
                 const Icon = action.icon;
                 return (

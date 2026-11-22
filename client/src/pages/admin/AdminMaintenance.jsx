@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Search,
   Headset,
@@ -9,6 +10,7 @@ import {
   IndianRupee,
   MapPin,
   RefreshCw,
+  UserCog,
 } from "lucide-react";
 import { maintenanceService } from "../../services/maintenanceService.js";
 import toast from "react-hot-toast";
@@ -16,7 +18,8 @@ import Button from "../../components/common/Button.jsx";
 import Input from "../../components/common/Input.jsx";
 import Select from "../../components/common/Select.jsx";
 import Card from "../../components/common/Card.jsx";
-import { formatAddress, formatDateTime } from "../../utils/helpers.js";
+import ForwardToTechnicianButton from "../../components/admin/ForwardToTechnicianButton.jsx";
+import { formatAddress } from "../../utils/helpers.js";
 
 const STATUSES = [
   "Requested",
@@ -156,15 +159,24 @@ const AdminMaintenance = () => {
             Track, schedule, and assign technician service visits with customer locations
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => loadRequests(true)}
-          disabled={refreshing}
-          className="flex items-center gap-2 self-start sm:self-auto"
-        >
-          <RefreshCw size={16} className={refreshing ? "animate-spin text-blue-600" : ""} />
-          <span>Refresh</span>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          <Link
+            to="/admin/technicians"
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-gray-900 hover:bg-blue-600 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+          >
+            <UserCog size={15} />
+            <span>Manage Technicians</span>
+          </Link>
+          <Button
+            variant="outline"
+            onClick={() => loadRequests(true)}
+            disabled={refreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw size={16} className={refreshing ? "animate-spin text-blue-600" : ""} />
+            <span>Refresh</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}
@@ -247,19 +259,27 @@ const AdminMaintenance = () => {
                       >
                         {r.status}
                       </span>
+                      {r.assignedTechnician && (
+                        <div className="text-[10px] font-semibold text-gray-500 mt-1">
+                          Tech: {r.assignedTechnician}
+                        </div>
+                      )}
                     </td>
                     <td className="py-4 px-4 text-xs text-gray-600 max-w-xs truncate">
                       {r.problemDescription}
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openUpdate(r)}
-                        className="text-blue-600 hover:bg-blue-50"
-                      >
-                        <Headset size={15} className="mr-1" /> Manage
-                      </Button>
+                      <div className="inline-flex items-center justify-end gap-1.5">
+                        <ForwardToTechnicianButton request={r} />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openUpdate(r)}
+                          className="text-blue-600 hover:bg-blue-50"
+                        >
+                          <Headset size={15} className="mr-1" /> Manage
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -365,17 +385,25 @@ const AdminMaintenance = () => {
                 leftIcon={<Wrench size={16} className="text-gray-400" />}
               />
 
-              <div className="pt-4 flex gap-3 justify-end border-t border-gray-100">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" variant="primary" disabled={updating}>
-                  {updating ? "Updating..." : "Update Request"}
-                </Button>
+              <div className="pt-4 flex flex-wrap items-center gap-3 justify-between border-t border-gray-100">
+                <ForwardToTechnicianButton
+                  request={{
+                    ...selectedReq,
+                    scheduledDate: form.scheduledDate || selectedReq.scheduledDate,
+                  }}
+                />
+                <div className="flex gap-3 ml-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="primary" disabled={updating}>
+                    {updating ? "Updating..." : "Update Request"}
+                  </Button>
+                </div>
               </div>
             </form>
           </div>
